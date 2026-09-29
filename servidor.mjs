@@ -166,8 +166,21 @@ app.delete("/api/base/:nome", protegida, (req, res) => {
 app.post("/api/testar", protegida, async (req, res) => {
   const mensagem = String(req.body?.mensagem ?? "").trim();
   if (!mensagem) return res.status(400).json({ erro: "diga a mensagem do cliente" });
+  // ⚠️ SÓ FUNCIONA ONDE O REPOSITÓRIO DO TRILHO ESTÁ, porque as definições de
+  // ferramenta são lidas de lá, e não copiadas: cópia envelhece e passa a
+  // mentir. No servidor não há repositório, e aí este botão não serve. Não é
+  // perda: em produção o ensaio bom é o da aba Configuração de IA do Trilho,
+  // que roda as ferramentas de verdade E a conferência de saída.
+  let criarFerramentasDeTeste;
   try {
-    const { criarFerramentasDeTeste } = await import("./ferramentas-de-teste.mjs");
+    ({ criarFerramentasDeTeste } = await import("./ferramentas-de-teste.mjs"));
+  } catch {
+    return res.status(501).json({
+      erro: "O teste de tom só roda na máquina de desenvolvimento, onde está o repositório do Trilho. Aqui, use o ensaio da aba Configuração de IA do Trilho: ele roda as ferramentas de verdade e a conferência de saída.",
+    });
+  }
+
+  try {
     const ferramentas = criarFerramentasDeTeste();
     const agora = new Date();
     const contexto = {
