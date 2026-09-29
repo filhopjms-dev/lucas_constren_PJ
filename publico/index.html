@@ -1,0 +1,244 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Lucas Tavares</title>
+<style>
+  :root {
+    --verde: #083d2e; --verde-claro: #0d5c45; --borda: #e4e7e5;
+    --fundo: #f5f7f6; --texto: #1a211e; --suave: #6b7671;
+    --alerta: #b4232a; --aviso: #8a6100;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; background: var(--fundo); color: var(--texto);
+    font: 15px/1.5 -apple-system, "Segoe UI", Roboto, sans-serif;
+  }
+  header {
+    background: var(--verde); color: #fff; padding: 18px 24px;
+    display: flex; align-items: baseline; gap: 14px; flex-wrap: wrap;
+  }
+  header h1 { margin: 0; font-size: 19px; font-weight: 600; }
+  header .sub { color: #9fc4b6; font-size: 13px; }
+  header .direita { margin-left: auto; display: flex; gap: 16px; align-items: baseline; }
+  header button { background: none; border: 1px solid #2c5f4f; color: #9fc4b6; }
+  main { max-width: 900px; margin: 0 auto; padding: 24px 16px 60px; }
+  section {
+    background: #fff; border: 1px solid var(--borda); border-radius: 10px;
+    padding: 20px; margin-bottom: 20px;
+  }
+  h2 { margin: 0 0 4px; font-size: 16px; }
+  .ajuda { color: var(--suave); font-size: 13px; margin: 0 0 14px; }
+  textarea, input[type=text], input[type=password] {
+    width: 100%; border: 1px solid var(--borda); border-radius: 7px;
+    padding: 10px 12px; font: inherit; color: inherit; background: #fff;
+  }
+  textarea { font-family: ui-monospace, "Cascadia Code", Consolas, monospace; font-size: 13px; line-height: 1.55; resize: vertical; }
+  button {
+    background: var(--verde); color: #fff; border: 0; border-radius: 7px;
+    padding: 9px 16px; font: inherit; font-weight: 500; cursor: pointer;
+  }
+  button:hover { background: var(--verde-claro); }
+  button:disabled { opacity: .5; cursor: default; }
+  button.texto { background: none; color: var(--alerta); padding: 4px 8px; font-size: 13px; }
+  .linha { display: flex; gap: 10px; align-items: center; }
+  .rodape { display: flex; gap: 12px; align-items: center; margin-top: 12px; }
+  .conta { color: var(--suave); font-size: 13px; margin-left: auto; }
+  ul { list-style: none; margin: 0; padding: 0; }
+  li {
+    display: flex; align-items: center; gap: 10px;
+    padding: 10px 0; border-bottom: 1px solid var(--borda);
+  }
+  li:last-child { border-bottom: 0; }
+  li .nome { flex: 1; }
+  li .bytes { color: var(--suave); font-size: 13px; }
+  .solto { border: 2px dashed var(--borda); border-radius: 8px; padding: 18px; text-align: center; color: var(--suave); margin-top: 14px; }
+  .solto.em-cima { border-color: var(--verde); background: #f0f6f3; color: var(--verde); }
+  .recado { margin-top: 12px; font-size: 14px; }
+  .recado.ok { color: var(--verde-claro); }
+  .recado.erro { color: var(--alerta); }
+  .nota { background: #fdf8ec; border: 1px solid #f0e2c0; color: var(--aviso); border-radius: 7px; padding: 10px 12px; font-size: 13px; }
+  .fala { background: var(--fundo); border-radius: 8px; padding: 14px; margin-top: 14px; white-space: pre-wrap; }
+  .fala .quem { font-weight: 600; font-size: 13px; color: var(--suave); display: block; margin-bottom: 4px; }
+  #entrada { max-width: 360px; margin: 80px auto; }
+  .escondido { display: none !important; }
+</style>
+</head>
+<body>
+
+<div id="entrada" class="escondido">
+  <section>
+    <h2>Lucas Tavares</h2>
+    <p class="ajuda">Configuração do agente. Área restrita.</p>
+    <input type="password" id="senha" placeholder="Senha" autocomplete="current-password">
+    <div class="rodape"><button id="btEntrar">Entrar</button></div>
+    <div class="recado erro" id="erroEntrada"></div>
+  </section>
+</div>
+
+<div id="painel" class="escondido">
+  <header>
+    <h1>Lucas Tavares</h1>
+    <span class="sub">agente da Constren, no Trilho</span>
+    <div class="direita">
+      <span class="sub" id="modelo"></span>
+      <span class="sub" id="total"></span>
+      <button id="btSair">Sair</button>
+    </div>
+  </header>
+
+  <main>
+    <section>
+      <h2>Prompt</h2>
+      <p class="ajuda">Quem o Lucas é e como ele conduz a conversa. Vale a partir da próxima mensagem, sem reiniciar nada.</p>
+      <textarea id="prompt" rows="18" spellcheck="false"></textarea>
+      <div class="rodape">
+        <button id="btPrompt">Salvar prompt</button>
+        <span class="conta" id="contaPrompt"></span>
+      </div>
+      <div class="recado" id="recadoPrompt"></div>
+    </section>
+
+    <section>
+      <h2>Base de conhecimento</h2>
+      <p class="ajuda">Arquivos .txt com lazer, bairro, objeções e argumentação. Arquivo com o mesmo nome substitui o que estava lá.</p>
+      <div class="nota">
+        Nada de preço, metragem, parcela ou data de entrega aqui dentro. Esses números saem das ferramentas do Trilho na hora da conversa; escritos na base, a conferência de saída barra a resposta e a conversa vai para a equipe.
+      </div>
+      <ul id="base"></ul>
+      <div class="solto" id="solto">
+        Arraste os .txt aqui, ou <label style="color:var(--verde);cursor:pointer;text-decoration:underline">escolha<input type="file" id="arquivos" accept=".txt" multiple hidden></label>
+      </div>
+      <div class="recado" id="recadoBase"></div>
+    </section>
+
+    <section>
+      <h2>Testar o tom</h2>
+      <p class="ajuda">Escreve como um cliente escreveria e vê o que o Lucas responderia. Nada é enviado a ninguém.</p>
+      <div class="linha">
+        <input type="text" id="mensagem" placeholder="Oi, vi o anúncio do Riviera. Qual o valor?">
+        <button id="btTestar">Testar</button>
+      </div>
+      <div class="nota" style="margin-top:12px">
+        Isto confere o TOM, não a trava. A conferência de saída do Trilho, que barra número que não veio de ferramenta, não roda aqui. Para ver o que seria barrado, use o ensaio na máquina de desenvolvimento.
+      </div>
+      <div id="resultado"></div>
+    </section>
+  </main>
+</div>
+
+<script>
+const $ = (id) => document.getElementById(id);
+const bytes = (n) => (n < 1024 ? n + " B" : (n / 1024).toFixed(1) + " KB");
+const recado = (el, texto, ok) => { el.textContent = texto; el.className = "recado " + (ok ? "ok" : "erro"); };
+
+async function api(caminho, opcoes = {}) {
+  const r = await fetch(caminho, {
+    ...opcoes,
+    headers: opcoes.body ? { "content-type": "application/json" } : undefined,
+  });
+  const corpo = await r.json().catch(() => ({}));
+  if (!r.ok) throw new Error(corpo.erro || "deu erro");
+  return corpo;
+}
+
+async function carregar() {
+  const c = await api("/api/config");
+  $("prompt").value = c.prompt;
+  $("contaPrompt").textContent = c.prompt.length.toLocaleString("pt-BR") + " caracteres";
+  $("modelo").textContent = c.modelo;
+  $("total").textContent = bytes(c.total) + " no total";
+  $("base").innerHTML = "";
+  if (!c.base.length) $("base").innerHTML = '<li style="color:var(--suave)">Nenhum documento ainda.</li>';
+  for (const d of c.base) {
+    const li = document.createElement("li");
+    li.innerHTML = `<span class="nome"></span><span class="bytes">${bytes(d.bytes)}</span><button class="texto">Remover</button>`;
+    li.querySelector(".nome").textContent = d.nome;
+    li.querySelector("button").onclick = async () => {
+      if (!confirm(`Remover ${d.nome} da base do Lucas?`)) return;
+      await api("/api/base/" + encodeURIComponent(d.nome), { method: "DELETE" });
+      carregar();
+    };
+    $("base").appendChild(li);
+  }
+}
+
+async function subir(lista) {
+  const arquivos = [...lista].filter((f) => f.name.toLowerCase().endsWith(".txt"));
+  const recusados = [...lista].length - arquivos.length;
+  for (const f of arquivos) {
+    await api("/api/base", { method: "POST", body: JSON.stringify({ nome: f.name, texto: await f.text() }) });
+  }
+  await carregar();
+  recado($("recadoBase"),
+    `${arquivos.length} documento(s) no lugar.` + (recusados ? ` ${recusados} recusado(s): só .txt.` : ""),
+    !recusados);
+}
+
+$("btEntrar").onclick = async () => {
+  try {
+    await api("/api/entrar", { method: "POST", body: JSON.stringify({ senha: $("senha").value }) });
+    location.reload();
+  } catch (e) { recado($("erroEntrada"), e.message, false); }
+};
+$("senha").onkeydown = (e) => { if (e.key === "Enter") $("btEntrar").click(); };
+$("btSair").onclick = async () => { await api("/api/sair", { method: "POST" }); location.reload(); };
+
+$("btPrompt").onclick = async () => {
+  const bt = $("btPrompt"); bt.disabled = true;
+  try {
+    const r = await api("/api/prompt", { method: "POST", body: JSON.stringify({ prompt: $("prompt").value }) });
+    recado($("recadoPrompt"), `Salvo. ${r.caracteres.toLocaleString("pt-BR")} caracteres, valendo já.`, true);
+    carregar();
+  } catch (e) { recado($("recadoPrompt"), e.message, false); }
+  bt.disabled = false;
+};
+$("prompt").oninput = () => {
+  $("contaPrompt").textContent = $("prompt").value.length.toLocaleString("pt-BR") + " caracteres";
+};
+
+$("arquivos").onchange = (e) => subir(e.target.files).catch((x) => recado($("recadoBase"), x.message, false));
+const solto = $("solto");
+solto.ondragover = (e) => { e.preventDefault(); solto.classList.add("em-cima"); };
+solto.ondragleave = () => solto.classList.remove("em-cima");
+solto.ondrop = (e) => {
+  e.preventDefault(); solto.classList.remove("em-cima");
+  subir(e.dataTransfer.files).catch((x) => recado($("recadoBase"), x.message, false));
+};
+
+$("btTestar").onclick = async () => {
+  const bt = $("btTestar"); bt.disabled = true;
+  $("resultado").innerHTML = '<div class="fala">pensando...</div>';
+  try {
+    const r = await api("/api/testar", { method: "POST", body: JSON.stringify({ mensagem: $("mensagem").value }) });
+    const d = r.decisao;
+    const texto = d.tipo === "responder" ? d.mensagens.join("\n")
+      : d.tipo === "transferir" ? (d.mensagemAoCliente || "") + "\n\n→ transferiu: " + d.motivo
+      : "→ não respondeu: " + d.motivo;
+    const caixa = document.createElement("div");
+    caixa.className = "fala";
+    caixa.innerHTML = '<span class="quem"></span>';
+    caixa.querySelector(".quem").textContent =
+      (d.tipo === "calar" ? "O Lucas ficaria calado" : "Lucas") +
+      (r.chamadas.length ? "  ·  consultou: " + r.chamadas.join(", ") : "");
+    caixa.append(texto.trim());
+    $("resultado").innerHTML = "";
+    $("resultado").appendChild(caixa);
+  } catch (e) {
+    $("resultado").innerHTML = '<div class="recado erro"></div>';
+    $("resultado").firstChild.textContent = e.message;
+  }
+  bt.disabled = false;
+};
+$("mensagem").onkeydown = (e) => { if (e.key === "Enter") $("btTestar").click(); };
+
+(async () => {
+  const { dentro } = await api("/api/sessao");
+  $(dentro ? "painel" : "entrada").classList.remove("escondido");
+  if (dentro) carregar();
+  else $("senha").focus();
+})();
+</script>
+</body>
+</html>

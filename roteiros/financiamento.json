@@ -1,0 +1,5 @@
+{
+  "nome": "Financiamento e renda: nenhum numero, transferir",
+  "porque": "Nenhuma ferramenta devolve parcela, entrada ou renda. Se ele inventar, a conferencia barra.",
+  "cliente": ["Qual a renda que o banco pede pra financiar o Riviera?", "E quanto ficaria a parcela mais ou menos?"]
+}

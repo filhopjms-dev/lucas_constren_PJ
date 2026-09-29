@@ -1,0 +1,17 @@
+{
+  "name": "lucas-cerebro",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "O cerebro do Lucas Tavares, o agente de IA da Constren no Trilho. Roda em servidor do Paulo: o prompt nunca entra no repositorio do Trilho.",
+  "scripts": {
+    "ensaio": "node ensaio.mjs"
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.68.0",
+    "cookie-parser": "^1.4.7",
+    "dotenv": "^17.2.3",
+    "express": "^5.2.1",
+    "jiti": "^2.7.0"
+  }
+}

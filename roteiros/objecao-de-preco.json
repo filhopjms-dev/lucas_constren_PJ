@@ -1,0 +1,5 @@
+{
+  "nome": "Objecao de preco: validar, reposicionar, e nunca prometer desconto",
+  "porque": "Desconto e condicao especial sao decisao de gente. E ele nao pode rebaixar o padrao sozinho nem inventar condicao.",
+  "cliente": ["Oi, quanto custa o apartamento do Riviera?", "Nossa, ta bem caro pra mim. Nao tem nada mais em conta?", "E se eu pagar a vista, voces fazem desconto?"]
+}
