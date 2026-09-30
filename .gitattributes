@@ -1,0 +1,4 @@
+# Script de servidor nasce aqui no Windows e roda no Linux. Com quebra de
+# linha do Windows, o Linux nao acha o interpretador e o erro nao diz isso.
+*.sh text eol=lf
+*.conf text eol=lf
