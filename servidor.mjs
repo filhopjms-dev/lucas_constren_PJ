@@ -230,4 +230,12 @@ app.use(express.static(path.join(AQUI, "publico")));
 
 app.listen(PORTA, "127.0.0.1", () => {
   console.log(`[lucas] no ar em http://127.0.0.1:${PORTA} (só local; o nginx é quem atende de fora)`);
+  // A IMPRESSÃO DO TOKEN QUE ESTE PROCESSO TEM NA MEMÓRIA, e não a do arquivo.
+  //
+  // Nunca o token, nem um pedaço dele: só o tamanho e um resumo de doze
+  // caracteres, do qual não se volta para o valor. Está aqui porque a impressão
+  // tirada do .env pode não ser a que o serviço usa (aspas que o dotenv remove,
+  // por exemplo), e foi assim que um 401 ficou meia hora sem explicação.
+  const impressao = crypto.createHash("sha256").update(TOKEN).digest("hex").slice(0, 12);
+  console.log(`[lucas] token em uso: ${TOKEN.length} caracteres, impressão ${impressao}`);
 });
