@@ -4,6 +4,11 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Lucas Tavares</title>
+<!-- O SVG vem primeiro porque escala sem borrar; o PNG de 32 é a rede para
+     quem não lê SVG na aba. O de 180 é o atalho na tela do celular. -->
+<link rel="icon" href="/lucas.svg" type="image/svg+xml">
+<link rel="icon" href="/lucas-32.png" sizes="32x32" type="image/png">
+<link rel="apple-touch-icon" href="/lucas-180.png">
 <style>
   :root {
     --verde: #083d2e; --verde-claro: #0d5c45; --borda: #e4e7e5;
@@ -20,6 +25,9 @@
     display: flex; align-items: baseline; gap: 14px; flex-wrap: wrap;
   }
   header h1 { margin: 0; font-size: 19px; font-weight: 600; }
+  /* O ícone no cabeçalho fica alinhado pelo texto, não pelo topo, senão ele
+     flutua acima do nome no navegador do celular. */
+  header .marca { align-self: center; border-radius: 7px; display: block; }
   header .sub { color: #9fc4b6; font-size: 13px; }
   header .direita { margin-left: auto; display: flex; gap: 16px; align-items: baseline; }
   header button { background: none; border: 1px solid #2c5f4f; color: #9fc4b6; }
@@ -79,6 +87,7 @@
 
 <div id="painel" class="escondido">
   <header>
+    <img src="/lucas.svg" alt="" width="30" height="30" class="marca">
     <h1>Lucas Tavares</h1>
     <span class="sub">agente da Constren, no Trilho</span>
     <div class="direita">
