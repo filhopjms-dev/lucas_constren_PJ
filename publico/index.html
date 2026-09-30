@@ -93,6 +93,9 @@
     <div class="direita">
       <span class="sub" id="modelo"></span>
       <span class="sub" id="total"></span>
+      <!-- A impressão do prompt NO AR. Serve para comparar com o arquivo local,
+           que é o único jeito de saber se o servidor ficou com versão antiga. -->
+      <span class="sub" id="impressao" title="impressão do prompt que está no ar; compare com: node impressao-do-prompt.mjs"></span>
       <button id="btSair">Sair</button>
     </div>
   </header>
@@ -158,6 +161,7 @@ async function carregar() {
   $("contaPrompt").textContent = c.prompt.length.toLocaleString("pt-BR") + " caracteres";
   $("modelo").textContent = c.modelo;
   $("total").textContent = bytes(c.total) + " no total";
+  $("impressao").textContent = c.impressao ? "prompt " + c.impressao : "";
   $("base").innerHTML = "";
   if (!c.base.length) $("base").innerHTML = '<li style="color:var(--suave)">Nenhum documento ainda.</li>';
   for (const d of c.base) {

@@ -153,6 +153,16 @@ app.get("/api/config", protegida, (req, res) => {
     base,
     modelo: MODELO,
     total: prompt.length + base.reduce((s, d) => s + d.bytes, 0),
+    // A IMPRESSÃO DO PROMPT QUE ESTÁ NO AR, para comparar com o arquivo local.
+    //
+    // O prompt vive em três lugares: o arquivo numerado que a gente guarda, o
+    // dados/prompt.txt que o ensaio lê, e este aqui, que é o que atende cliente.
+    // O ensaio já avisa quando os dois primeiros se desencontram. Faltava saber
+    // se o terceiro ficou para trás -- e ficar para trás em silêncio foi o que
+    // nos custou meia hora com o token em 30/09/2026.
+    //
+    // Doze caracteres de sha256. Comparar com `node impressao-do-prompt.mjs`.
+    impressao: prompt ? crypto.createHash("sha256").update(prompt).digest("hex").slice(0, 12) : null,
   });
 });
 

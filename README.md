@@ -137,6 +137,41 @@ onde estavam.
 
 ---
 
+## Mexer no prompt: a regra das versões
+
+O prompt do Lucas mora em **três lugares**, e os três têm de dizer a mesma coisa:
+
+| onde | o que é |
+|---|---|
+| `../PROMPT_LUCAS_TAVARES_vN_Trilho_Constren.txt` | a versão guardada, o histórico |
+| `cerebro/dados/prompt.txt` | o que o `ensaio.mjs` lê aqui na máquina |
+| `/root/lucas/dados/prompt.txt` | **o que atende cliente** |
+
+**Desde que o Lucas entrou em conversa real, toda alteração vira uma versão
+nova.** Não se edita a versão publicada por cima: cria-se
+`PROMPT_LUCAS_TAVARES_v(N+1)_Trilho_Constren.txt`. É a mesma regra do Paulo
+André, e existe pelo mesmo motivo: quando uma resposta sai errada em produção, a
+primeira pergunta é *com qual texto ele estava atendendo*, e sem versão numerada
+não há como responder.
+
+O caminho de uma mudança:
+
+1. Editar **`cerebro/dados/prompt.txt`** (é o que o ensaio lê; editar o guardado
+   e rodar o ensaio mede o texto antigo, e o ensaio avisa quando isso acontece)
+2. Medir, não supor. A falha costuma ser **intermitente**: rodar a mesma pergunta
+   umas oito vezes e contar, porque uma rodada limpa não prova nada
+3. Salvar como a **versão seguinte** na pasta de cima
+4. Colar na tela do Lucas e salvar
+5. **Conferir que subiu:** `node impressao-do-prompt.mjs` imprime a impressão
+   daqui; a tela mostra a do servidor no canto de cima. **As duas têm que ser
+   iguais.** Sem isso, "eu subi, acho" é tudo o que se tem -- e foi assim que a
+   gente perdeu meia hora com um token em 30/09/2026
+
+A base de conhecimento segue a mesma ideia: documento alterado se sobe de novo
+pela tela, e o total em bytes no canto da tela muda quando entra.
+
+---
+
 ## Em desenvolvimento
 
 ```bash
