@@ -33,8 +33,8 @@ const { pensar, pensarUmPasso, MODELO, invalidarPrompt, PASTA_DA_BASE, ARQUIVO_D
   await import("./cerebro.mjs");
 
 const PORTA = Number(process.env.LUCAS_PORTA || 4310);
-const SENHA = process.env.LUCAS_SENHA || "";
-const TOKEN = process.env.LUCAS_TOKEN || "";
+const SENHA = (process.env.LUCAS_SENHA || "").trim();
+const TOKEN = (process.env.LUCAS_TOKEN || "").trim();
 const SEGREDO = process.env.LUCAS_SEGREDO || crypto.randomBytes(32).toString("hex");
 
 for (const [nome, valor] of [["LUCAS_SENHA", SENHA], ["LUCAS_TOKEN", TOKEN]]) {
@@ -73,8 +73,18 @@ app.use(cookieParser());
 // opaco que veio daqui. Estado aqui dentro é a conversa já montada do nosso
 // jeito, com o prompt aplicado. Do lado de lá é só um objeto para repassar.
 app.post("/api/pensar", async (req, res) => {
-  const veio = String(req.get("authorization") ?? "").replace(/^Bearer\s+/i, "");
-  if (!igual(veio, TOKEN)) return res.status(401).json({ erro: "token inválido" });
+  // APARA OS DOIS LADOS. Token vive em campo de painel e em arquivo de texto, e
+  // os dois colecionam espaço e quebra de linha sem ninguém ver. Sem aparar, um
+  // espaço a mais responde 401 "token inválido", que manda procurar o erro no
+  // lugar errado: a pessoa confere o valor, vê que está igual, e não está.
+  const veio = String(req.get("authorization") ?? "").replace(/^Bearer\s+/i, "").trim();
+  if (!igual(veio, TOKEN)) {
+    // O QUE O LOG DIZ, E O QUE ELE NUNCA DIZ. Nunca o token, nem um pedaço dele.
+    // Só o tamanho dos dois e se a impressão bate, que é o suficiente para saber
+    // se o problema é valor diferente ou sujeira na ponta, sem vazar nada.
+    console.warn(`[lucas] recusei uma chamada: chegaram ${veio.length} caracteres, espero ${TOKEN.length}.`);
+    return res.status(401).json({ erro: "token inválido" });
+  }
 
   const { contexto, definicoes, estado, resultados } = req.body ?? {};
   if (!estado && !contexto?.turnos) return res.status(400).json({ erro: "faltou o contexto" });
