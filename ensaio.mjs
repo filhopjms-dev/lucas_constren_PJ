@@ -25,7 +25,30 @@ if (!process.env.ANTHROPIC_API_KEY) {
 }
 
 const { criarFerramentasDeTeste, conferirSaida } = await import("./ferramentas-de-teste.mjs");
-const { pensar, MODELO } = await import("./cerebro.mjs");
+const { pensar, MODELO, ARQUIVO_DO_PROMPT } = await import("./cerebro.mjs");
+
+// ⚠️ O ENSAIO LÊ dados/prompt.txt, E NÃO A VERSÃO GUARDADA NA PASTA DE CIMA.
+//
+// A separação é certa (a versão numerada é arquivo morto, o que vale é o que
+// está no ar), mas ela tem um jeito silencioso de morder: editar a versão
+// guardada, rodar o ensaio, e medir o prompt ANTIGO achando que mediu o novo.
+// Aconteceu em 30/09/2026, e a variação que apareceu foi acaso, não conserto.
+//
+// Aqui o aviso é barulhento de propósito. Ele compara as datas, não o conteúdo:
+// arquivo guardado mais novo que o que está no ar quer dizer que alguém editou
+// um e esqueceu o outro.
+{
+  const guardados = fs.readdirSync(path.resolve(AQUI, ".."))
+    .filter((f) => /^PROMPT_.*\.txt$/i.test(f))
+    .map((f) => path.join(path.resolve(AQUI, ".."), f));
+  const noAr = fs.statSync(ARQUIVO_DO_PROMPT).mtimeMs;
+  const maisNovo = guardados.filter((f) => fs.statSync(f).mtimeMs > noAr + 1000);
+  if (maisNovo.length) {
+    console.log(`\n  ⚠️  ATENÇÃO: ${maisNovo.map((f) => path.basename(f)).join(", ")} está mais novo que dados/prompt.txt.`);
+    console.log("      O ensaio vai medir o prompt QUE ESTÁ NO AR, não o que você acabou de editar.");
+    console.log("      Se a intenção era testar a edição, copie para dados/prompt.txt antes.\n");
+  }
+}
 
 const FUSO = "America/Maceio";
 
