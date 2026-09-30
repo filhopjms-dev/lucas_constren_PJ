@@ -89,15 +89,29 @@ app.post("/api/pensar", async (req, res) => {
   const { contexto, definicoes, estado, resultados } = req.body ?? {};
   if (!estado && !contexto?.turnos) return res.status(400).json({ erro: "faltou o contexto" });
 
+  // O RELÓGIO, MEDIDO DE DENTRO.
+  //
+  // O prazo do Trilho é o menor entre 25 s e o que sobra do orçamento do turno,
+  // e ele conta o turno INTEIRO: as idas e voltas do carteiro, a rede entre a
+  // Vercel e aqui, e o pensar de cada volta. Este log mede só o pedaço que é
+  // nosso. A diferença entre ele e o tempo que o Trilho observa é a rede, e é a
+  // única forma de saber de quem é a culpa quando um turno estourar.
+  const comeco = Date.now();
+  const volta = (estado && typeof estado === "object" ? estado.voltas ?? 0 : 0) + 1;
+
   try {
     const r = await pensarUmPasso(
       { contexto, definicoes, estado, resultados },
       AbortSignal.timeout(Number(process.env.LUCAS_PRAZO_MS || 22_000)),
     );
+    const s = ((Date.now() - comeco) / 1000).toFixed(1);
+    const oQue = r.decisao ? `decidiu ${r.decisao.tipo}` : `pediu ${r.ferramentas.map((f) => f.nome).join(", ")}`;
+    const devolvido = (JSON.stringify(r).length / 1024).toFixed(1);
+    console.log(`[lucas] volta ${volta}: ${s}s, ${oQue}, devolvi ${devolvido} KB`);
     return res.json(r);
   } catch (e) {
     const motivo = e instanceof Error ? e.message : String(e);
-    console.error(`[lucas] pensar falhou: ${motivo}`);
+    console.error(`[lucas] volta ${volta} falhou depois de ${((Date.now() - comeco) / 1000).toFixed(1)}s: ${motivo}`);
     return res.status(503).json({ erro: "o cérebro não respondeu" });
   }
 });
