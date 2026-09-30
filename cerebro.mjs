@@ -34,9 +34,18 @@ export const ARQUIVO_DO_PROMPT = path.join(PASTA, "prompt.txt");
 // André roda Opus sem prazo apertado; aqui a pressa é requisito.
 export const MODELO = process.env.LUCAS_MODELO || "claude-sonnet-5-5";
 
-// Uma resposta curta de WhatsApp. Teto alto o suficiente para o modelo pensar em
-// voz alta nas ferramentas e curto o suficiente para não escrever redação.
-const MAXIMO_DE_TOKENS = 900;
+// ⚠️ ESTE TETO CONTA O PENSAMENTO, NÃO SÓ A RESPOSTA.
+//
+// No Sonnet 5.5 o pensamento vem ligado por padrão e é cobrado como saída, então
+// ele divide este orçamento com o texto. Com 900, um turno mais difícil gastava
+// tudo pensando e devolvia texto VAZIO: o cliente confirmava dia e hora da visita
+// e recebia silêncio. Medido: o turno que falhou gastou exatamente 900; o mesmo
+// turno, repetido, coube em 747 e funcionou. Defeito intermitente, dos piores.
+//
+// Subir o teto não faz o modelo pensar mais: o pensamento é adaptativo e usa o
+// que precisa. O teto só deixa de cortar no meio. A brevidade da resposta quem
+// garante é o prompt, e a trava de 1.000 caracteres logo abaixo.
+const MAXIMO_DE_TOKENS = 2400;
 
 // O freio do laço. Cada volta é uma ida à API, e o relógio é de 25 s.
 const MAXIMO_DE_VOLTAS = 6;
@@ -157,7 +166,25 @@ const usoDa = (r) => ({ modelo: MODELO, ...r.usage });
 function interpretar(r) {
   if (r.stop_reason !== "tool_use") {
     const texto = textoDe(r);
-    if (!texto) return { decisao: { tipo: "calar", motivo: "o modelo não escreveu nada" } };
+
+    // BATER NO TETO NÃO É DECIDIR CALAR, E CONFUNDIR OS DOIS CUSTA CARO.
+    //
+    // Calar é uma decisão do robô, tomada quando a mensagem não pede resposta.
+    // Bater no teto é o orçamento acabando no meio, e o que sobra é metade de
+    // uma frase ou nada. Tratar isso como silêncio deixou um cliente que tinha
+    // acabado de confirmar dia e hora de visita sem uma palavra. Aqui a conversa
+    // vai para a equipe, que é o desfecho certo para um turno que não terminou.
+    if (r.stop_reason === "max_tokens") {
+      return {
+        decisao: {
+          tipo: "transferir",
+          motivo: "o robô estourou o orçamento de resposta no meio do turno, então o que ele escreveu não vale",
+          mensagemAoCliente: "Vou chamar alguém da equipe para te responder isso.",
+        },
+      };
+    }
+
+    if (!texto) return { decisao: { tipo: "calar", motivo: `o modelo não escreveu nada (parou por ${r.stop_reason})` } };
     if (texto.length > MAXIMO_DE_CARACTERES) {
       // Cortar calado entregaria meia frase ao cliente, e a trava de saída do
       // Trilho barraria a resposta de qualquer jeito.

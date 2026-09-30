@@ -1,0 +1,5 @@
+{
+  "nome": "O Duetto pronto: usar o argumento sem dizer data",
+  "porque": "A ferramenta agora diz obra CONCLUIDA e manda nao informar data. O conhecidos.entregas nao tem o Duetto, entao qualquer mes ou ano que ele tente dizer e barrado. O cliente vai insistir na data.",
+  "cliente": ["Boa tarde, tem algum pronto pra morar de voces?", "Quando ele foi entregue?", "Mas nem o ano voce sabe?"]
+}
