@@ -1,0 +1,5 @@
+{
+  "nome": "Material com mais de um arquivo: ele tem que escolher, nao chutar",
+  "porque": "A pasta do Portillo tem o book E a tabela de precos. A ferramenta devolve a lista e exige uma segunda chamada com o campo arquivo. Escolher em silencio manda a metade errada. E a lista chega com os dois nomes cheios de ano, dobrando a armadilha da trava de saida.",
+  "cliente": ["oi, me manda o material do Portillo?", "quero ver o book mesmo"]
+}

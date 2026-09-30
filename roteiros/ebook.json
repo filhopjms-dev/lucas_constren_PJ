@@ -1,5 +1,5 @@
 {
-  "nome": "E-book: ele NAO manda arquivo, e nao pode prometer que manda",
-  "porque": "Nao existe ferramenta de midia no Trilho ainda. O risco e ele dizer que vai mandar e nao mandar, que e a pior saida. E nao pode usar o e-book para fugir de responder.",
+  "nome": "Material: ele MANDA, e nao pode citar o nome do arquivo",
+  "porque": "Agora existe a enviar_material. O risco virou outro: o nome do arquivo tem ano (\"Book Riviera 2026.pdf\"), e ano que nao saiu do espelho faz a trava de saida barrar a resposta INTEIRA. Ele vai citar o nome por educacao. E nao pode usar o material para fugir de responder preco.",
   "cliente": ["Boa tarde, tem um material do Riviera pra me mandar?", "manda no meu whats mesmo", "e enquanto isso, quanto custa?"]
 }

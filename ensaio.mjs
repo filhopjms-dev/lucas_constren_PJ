@@ -17,11 +17,36 @@ import dotenv from "dotenv";
 
 const AQUI = path.dirname(fileURLToPath(import.meta.url));
 
-// A chave é a do Paulo, que já vive no .env do CRM da Arcos. Nunca é impressa.
-dotenv.config({ path: process.env.LUCAS_ENV || "C:/Users/paulo/arcos-crm/.env", quiet: true });
+// DE QUAL CONTA ESTE ENSAIO GASTA, e por que a ordem importa.
+//
+// ⚠️ Em 30/09/2026 o ensaio derrubou o Paulo André. Ele lia direto o .env do CRM
+// da Arcos, "para não haver uma segunda cópia da chave na máquina de ninguém" --
+// e o preço dessa economia foi ensaiar o Lucas gastando da conta que mantém o
+// agente da Arcos atendendo cliente. Umas 55 chamadas num dia zeraram o saldo, e
+// o crédito na Anthropic é da ORGANIZAÇÃO: saldo zerado derruba toda chave dela.
+// O Paulo André ficou mudo em produção, sem erro visível para ninguém.
+//
+// Agora a chave do Lucas vem PRIMEIRO, do .env daqui. A do CRM é só o último
+// recurso, e quando ela entra o aviso é barulhento: testar não pode ter o poder
+// de derrubar o que está atendendo.
+dotenv.config({ path: path.join(AQUI, ".env"), quiet: true });
+let deOndeVeioAChave = "o .env do Lucas (conta Vapor)";
+
 if (!process.env.ANTHROPIC_API_KEY) {
-  console.error("Não achei a ANTHROPIC_API_KEY. Aponte o .env com LUCAS_ENV=caminho/para/.env");
+  dotenv.config({ path: process.env.LUCAS_ENV || "C:/Users/paulo/arcos-crm/.env", quiet: true });
+  deOndeVeioAChave = "⚠️  O .ENV DO CRM DA ARCOS -- ESTE ENSAIO VAI GASTAR DA CONTA DO PAULO ANDRÉ";
+}
+if (!process.env.ANTHROPIC_API_KEY) {
+  console.error("Não achei a ANTHROPIC_API_KEY. Ponha uma no .env daqui, ou aponte com LUCAS_ENV=caminho/para/.env");
   process.exit(1);
+}
+
+// QUAL chave, dita em voz alta. Impressão, nunca o valor. A lição do token de
+// 30/09/2026: o que não se mede em voz alta se desencontra em silêncio.
+{
+  const c = await import("node:crypto");
+  const imp = c.createHash("sha256").update(process.env.ANTHROPIC_API_KEY.trim()).digest("hex").slice(0, 12);
+  console.log(`\n  chave ${imp} · ${deOndeVeioAChave}`);
 }
 
 const { criarFerramentasDeTeste, conferirSaida } = await import("./ferramentas-de-teste.mjs");
@@ -119,7 +144,7 @@ async function umaRodada(turnos, lead, contato) {
   const u = ferramentas.usoAcumulado();
   console.log(cinza(`  ${segundos}s · ${u ? `${u.tokensEntrada} entrada, ${u.tokensSaida} saída, ${u.tokensDeCacheLidos} de cache lido` : "sem uso anotado"} · ${MODELO}`));
 
-  return { decisao, conferencia };
+  return { decisao, conferencia, chamadas: ferramentas.chamadas };
 }
 
 // ---------------------------------------------------------------- a partida
@@ -141,7 +166,18 @@ if (iRoteiro >= 0) {
     const r = await umaRodada(turnos, roteiro.lead ?? null, roteiro.contato ?? {});
     if (!r) break;
     if (r.conferencia && !r.conferencia.ok) barradas++;
-    if (r.decisao.tipo === "responder") turnos.push({ role: "assistant", content: r.decisao.mensagens.join("\n") });
+    if (r.decisao.tipo === "responder") {
+      // O ARQUIVO QUE SAIU TEM DE APARECER NO HISTÓRICO, senão o ensaio mente.
+      //
+      // No Trilho, o material enviado vira uma linha do robô na conversa,
+      // "[Foi enviado um documento]", pelo mesmo caminho de qualquer mídia. Sem
+      // isso aqui, o Lucas chega na mensagem seguinte sem nenhum sinal de que o
+      // arquivo saiu, e manda de novo -- e eu ia culpar o prompt por um defeito
+      // que era meu. Em 30/09/2026 quase aconteceu.
+      const mandou = r.chamadas?.some((c) => c.nome === "enviar_material" && /vai ser mandado ao cliente/.test(c.resposta ?? ""));
+      const texto = r.decisao.mensagens.join("\n") + (mandou ? "\n[Foi enviado um documento]" : "");
+      turnos.push({ role: "assistant", content: texto });
+    }
     else if (r.decisao.tipo === "transferir") { if (r.decisao.mensagemAoCliente) turnos.push({ role: "assistant", content: r.decisao.mensagemAoCliente }); break; }
     else break;
   }

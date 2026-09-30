@@ -45,10 +45,37 @@ function acharCaptura(nome, entrada) {
   });
 }
 
+// O ACERVO DE MENTIRA, para exercitar a enviar_material sem tocar no Drive.
+//
+// Os nomes TÊM ANO de propósito, porque é assim no acervo de verdade ("Book
+// Portillo 2026.pdf"), e é daí que vem a armadilha: a conferência de saída barra
+// ano que não saiu de ferramenta de espelho. Se o Lucas citar o nome do arquivo
+// por educação, a resposta inteira é barrada e a conversa vai para a equipe por
+// causa de um arquivo que estava certo. O ensaio existe para pegar isso aqui.
+//
+// Três empreendimentos, três caminhos: um com escolha, um direto, e um que
+// recusa. O que recusa é o mais importante de todos -- é onde o robô não pode
+// prometer.
+const ACERVO = {
+  portillo: ["Book Portillo 2026.pdf", "Tabela de precos Portillo 2026.pdf"],
+  riviera: ["Book Riviera 2026.pdf"],
+  duetto: null, // a pasta do book não foi liberada para a conta de serviço
+};
+
+// A mesma frase que o material.ts monta para toda recusa. Termina sempre igual,
+// e é esse fim que o prompt manda obedecer.
+const eEntao = (oQueHouve) =>
+  `${oQueHouve} NÃO prometa mandar o material: diga que a equipe envia e transfira, ou siga a conversa sem tocar no assunto.`;
+
+const listar = (nomes) => nomes.map((n) => `"${n}"`).join(", ");
+
 export function criarFerramentasDeTeste() {
   const conhecidos = { valores: new Set(), areas: new Set(), quantidades: new Set(), entregas: new Set(), anos: new Set() };
   const chamadas = [];
   let uso = null;
+  // UM ARQUIVO POR RODADA, igual ao Trilho: o segundo pedido é recusado sem
+  // consultar nada, dizendo qual já vai sair.
+  let materialNaFila = null;
 
   const anotarConhecidos = (c) => {
     for (const v of c?.valores ?? []) conhecidos.valores.add(v);
@@ -70,6 +97,39 @@ export function criarFerramentasDeTeste() {
         : "Para agendar preciso do título e da data e hora combinadas.";
     } else if (nome === "mover_para_visita") {
       resposta = "Movi o lead para Visita. Não comente isso com o cliente. [ENSAIO: nada foi gravado de verdade]";
+    } else if (nome === "marcar_temperatura") {
+      const t = String(entrada?.temperatura ?? "").trim();
+      resposta = ["quente", "morno", "frio"].includes(t)
+        ? `Marquei o lead como ${t}. Não comente isso com o cliente. [ENSAIO: nada foi gravado de verdade]`
+        : "Diga a temperatura: quente, morno ou frio.";
+    } else if (nome === "enviar_material") {
+      if (materialNaFila) {
+        resposta = `Nesta mesma resposta você já vai mandar "${materialNaFila}", e ele sai depois da sua mensagem. Mande um arquivo por vez: se o cliente precisar de outro, ofereça na próxima mensagem dele.`;
+      } else {
+        const chave = Object.keys(ACERVO).find((k) => {
+          const e = semAcento(entrada?.empreendimento);
+          return e && (k.includes(e) || e.includes(k));
+        });
+        if (!chave) {
+          resposta = "Não achei empreendimento com esse nome. Os empreendimentos à venda são: Portillo, Duetto, Riviera.";
+        } else if (!ACERVO[chave]) {
+          resposta = eEntao(`O acervo do ${chave} não tem pasta de book de vendas.`);
+        } else {
+          const arquivos = ACERVO[chave];
+          const pedido = typeof entrada?.arquivo === "string" ? entrada.arquivo.trim() : "";
+          if (arquivos.length > 1 && !pedido) {
+            resposta = `O book do empreendimento tem mais de um arquivo: ${listar(arquivos)}. Chame enviar_material de novo dizendo qual, no campo arquivo. Se não souber qual serve, pergunte ao cliente o que ele quer ver.`;
+          } else {
+            const casam = pedido ? arquivos.filter((a) => semAcento(a).includes(semAcento(pedido))) : arquivos;
+            if (!casam.length) resposta = `Não há arquivo com esse nome no book. Os que existem são: ${listar(arquivos)}.`;
+            else if (casam.length > 1) resposta = `Mais de um arquivo do book combina com "${pedido}": ${listar(casam)}. Diga o nome inteiro.`;
+            else {
+              materialNaFila = casam[0];
+              resposta = `Certo, "${casam[0]}" vai ser mandado ao cliente logo depois da sua resposta. Avise que está mandando, com naturalidade, sem repetir o nome do arquivo e sem descrever o conteúdo dele: você não o leu.`;
+            }
+          }
+        }
+      }
     } else {
       const c = acharCaptura(nome, entrada);
       if (c) { resposta = c.resposta; anotarConhecidos(c.conhecidos); }

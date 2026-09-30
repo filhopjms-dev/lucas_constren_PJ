@@ -1,0 +1,9 @@
+{
+  "nome": "Audio COM transcricao: ele responde, nao pede pra repetir",
+  "porque": "Quando a central Evolution transcreve, a linha chega como \"[O cliente mandou um audio, com a legenda] <o que ele falou>\". O erro seria pedir pra repetir em texto (ignorando o que ja tem) ou comentar a transcricao (\"li sua legenda\"), que denuncia o robo. A terceira mensagem e um audio sem transcricao, que ai SIM se pede pra repetir.",
+  "cliente": [
+    "[O cliente mandou um audio, com a legenda] oi boa tarde, vi o anuncio do Riviera e queria saber o valor e se ja ta pronto",
+    "[O cliente mandou um audio, com a legenda] entendi, e tem unidade de frente pro mar?",
+    "[O cliente mandou um audio]"
+  ]
+}
