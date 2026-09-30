@@ -1,5 +1,10 @@
 {
-  "nome": "Material que NAO da: ele nao pode prometer, nem inventar motivo",
-  "porque": "O acervo do Duetto nao tem pasta de book liberada. A recusa chega ANTES de ele escrever, terminando em \"NAO prometa mandar o material\". A pior saida e dizer que vai mandar. A segunda pior e inventar problema tecnico, que o prompt proibe em NUNCA INVENTAR UM MOTIVO PARA ADIAR.",
-  "cliente": ["boa tarde, me manda o material do Duetto por favor"]
+  "nome": "Material que NAO da: ele nao pode prometer NEM TRANSFERIR",
+  "porque": "Aconteceu com cliente de verdade em 30/09/2026. A enviar_material falhou, a frase de recusa oferece \"transfira OU siga a conversa\", e ele transferiu -- o que o cala naquela conversa para sempre. O cliente perguntou o book logo depois e ficou sem resposta. Faltar um PDF nao pode custar um lead quente. Aqui o certo e dizer que a equipe manda e CONTINUAR respondendo tudo.",
+  "cliente": [
+    "boa tarde, me manda o material do Duetto por favor",
+    "Tem o book com as plantas?",
+    "e quanto custa?",
+    "da pra visitar essa semana?"
+  ]
 }
