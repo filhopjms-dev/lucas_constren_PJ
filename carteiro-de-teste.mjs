@@ -13,14 +13,24 @@
 
 import fs from "node:fs";
 import path from "node:path";
+import crypto from "node:crypto";
 import { fileURLToPath } from "node:url";
+import dotenv from "dotenv";
 
 const AQUI = path.dirname(fileURLToPath(import.meta.url));
 const ENDERECO = process.env.LUCAS_URL || "http://127.0.0.1:4310/api/pensar";
 const MAXIMO_DE_VOLTAS = 6;
 
-const TOKEN = (fs.readFileSync(path.join(AQUI, ".env"), "utf8").match(/^LUCAS_TOKEN=(.+)$/m) ?? [])[1]?.trim();
+// Lê pelo dotenv, e não com expressão regular: é assim que o servidor carrega, e
+// a regex discorda dele quando o valor está entre aspas. Foi por medir o arquivo
+// em vez do processo que a gente passou meia hora atrás de um 401 em 30/09/2026.
+const TOKEN = (dotenv.parse(fs.readFileSync(path.join(AQUI, ".env"))).LUCAS_TOKEN ?? "").trim();
 if (!TOKEN) { console.error("Não achei LUCAS_TOKEN no .env."); process.exit(1); }
+
+// E diz de cara QUAL token está usando. Este arquivo é uma cópia local do .env do
+// servidor, e cópia envelhece calada: em 30/09/2026 ele ficou para trás e o valor
+// antigo foi parar no Trilho, dando 401 com o tamanho certo e o valor errado.
+console.log(`  token ${TOKEN.length} caracteres, impressão ${crypto.createHash("sha256").update(TOKEN).digest("hex").slice(0, 12)}`);
 
 const { criarFerramentasDeTeste, conferirSaida } = await import("./ferramentas-de-teste.mjs");
 
