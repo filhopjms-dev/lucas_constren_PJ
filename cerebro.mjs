@@ -141,11 +141,62 @@ const cliente = new Anthropic();
 
 const textoDe = (r) => r.content.filter((b) => b.type === "text").map((b) => b.text).join("\n").trim();
 
+const sistemaPara = (contexto) => [
+  { type: "text", text: obterSistemaFixo(), cache_control: { type: "ephemeral" } },
+  { type: "text", text: sistemaDaVez(contexto) },
+];
+
+const usoDa = (r) => ({ modelo: MODELO, ...r.usage });
+
+// O QUE A RESPOSTA DA API QUER DIZER, num lugar só.
+//
+// Devolve `decisao` quando o turno acabou, ou `chamadas` quando o modelo quer
+// ferramenta. Está separado do laço porque quem roda o laço muda: em
+// desenvolvimento é o `pensar` aqui embaixo; em produção é o carteiro do Trilho,
+// uma volta por requisição. A leitura tem de ser a mesma nos dois.
+function interpretar(r) {
+  if (r.stop_reason !== "tool_use") {
+    const texto = textoDe(r);
+    if (!texto) return { decisao: { tipo: "calar", motivo: "o modelo não escreveu nada" } };
+    if (texto.length > MAXIMO_DE_CARACTERES) {
+      // Cortar calado entregaria meia frase ao cliente, e a trava de saída do
+      // Trilho barraria a resposta de qualquer jeito.
+      return { decisao: { tipo: "transferir", motivo: `o robô escreveu uma resposta longa demais (${texto.length} caracteres) para o WhatsApp`, mensagemAoCliente: "Vou chamar alguém da equipe para te explicar isso direito." } };
+    }
+    // UMA mensagem, sempre. O arcabouço aceita até três, mas a regra do Lucas,
+    // herdada do Paulo André, é uma resposta, uma mensagem, uma ideia.
+    return { decisao: { tipo: "responder", mensagens: [texto] } };
+  }
+
+  const chamadas = [];
+  for (const bloco of r.content) {
+    if (bloco.type !== "tool_use") continue;
+    if (bloco.name === "transferir_para_equipe") {
+      const m = typeof bloco.input?.mensagem_ao_cliente === "string" ? bloco.input.mensagem_ao_cliente.trim() : "";
+      return {
+        decisao: {
+          tipo: "transferir",
+          motivo: String(bloco.input?.motivo ?? "sem motivo declarado"),
+          ...(m ? { mensagemAoCliente: m } : {}),
+        },
+      };
+    }
+    if (bloco.name === "encerrar_sem_responder") {
+      return { decisao: { tipo: "calar", motivo: String(bloco.input?.motivo ?? "a mensagem não pedia resposta") } };
+    }
+    chamadas.push({ id: bloco.id, nome: bloco.name, entrada: bloco.input ?? {} });
+  }
+  // Parou por ferramenta e não pediu nenhuma que exista: não há o que executar,
+  // e insistir seria laço.
+  if (!chamadas.length) return { decisao: { tipo: "transferir", motivo: "o robô pediu uma ferramenta que não existe" , mensagemAoCliente: "Vou chamar alguém da equipe para te ajudar com isso." } };
+  return { chamadas, conteudo: r.content };
+}
+
+// O LAÇO INTEIRO AQUI DENTRO. Serve ao ensaio da máquina de desenvolvimento, que
+// tem as ferramentas à mão. Em produção quem roda o laço é o carteiro, porque as
+// ferramentas leem o banco da Constren e só existem lá.
 export async function pensar(contexto, ferramentas, sinal) {
-  const sistema = [
-    { type: "text", text: obterSistemaFixo(), cache_control: { type: "ephemeral" } },
-    { type: "text", text: sistemaDaVez(contexto) },
-  ];
+  const sistema = sistemaPara(contexto);
   const ferramentasDaApi = [...ferramentas.definicoes, ...DECIDIR];
   const mensagens = [...contexto.turnos];
 
@@ -156,42 +207,77 @@ export async function pensar(contexto, ferramentas, sinal) {
     );
     // O gasto entra no teto do mês a CADA chamada, e não só no fim: se a volta
     // seguinte estourar o prazo ou a API cair, o que já foi gasto continua gasto.
-    ferramentas.anotarUso({ modelo: MODELO, ...r.usage });
+    ferramentas.anotarUso(usoDa(r));
 
-    if (r.stop_reason !== "tool_use") {
-      const texto = textoDe(r);
-      if (!texto) return { tipo: "calar", motivo: "o modelo não escreveu nada" };
-      if (texto.length > MAXIMO_DE_CARACTERES) {
-        // Cortar calado entregaria meia frase ao cliente, e a trava de saída do
-        // Trilho barraria a resposta de qualquer jeito.
-        return { tipo: "transferir", motivo: `o robô escreveu uma resposta longa demais (${texto.length} caracteres) para o WhatsApp` };
-      }
-      // UMA mensagem, sempre. O arcabouço aceita até três, mas a regra do Lucas,
-      // herdada do Paulo André, é uma resposta, uma mensagem, uma ideia.
-      return { tipo: "responder", mensagens: [texto] };
-    }
+    const lido = interpretar(r);
+    if (lido.decisao) return lido.decisao;
 
-    mensagens.push({ role: "assistant", content: r.content });
+    mensagens.push({ role: "assistant", content: lido.conteudo });
     const resultados = [];
-    for (const bloco of r.content) {
-      if (bloco.type !== "tool_use") continue;
-      if (bloco.name === "transferir_para_equipe") {
-        const m = typeof bloco.input?.mensagem_ao_cliente === "string" ? bloco.input.mensagem_ao_cliente.trim() : "";
-        return {
-          tipo: "transferir",
-          motivo: String(bloco.input?.motivo ?? "sem motivo declarado"),
-          ...(m ? { mensagemAoCliente: m } : {}),
-        };
-      }
-      if (bloco.name === "encerrar_sem_responder") {
-        return { tipo: "calar", motivo: String(bloco.input?.motivo ?? "a mensagem não pedia resposta") };
-      }
-      resultados.push({ type: "tool_result", tool_use_id: bloco.id, content: await ferramentas.executar(bloco.name, bloco.input) });
+    for (const c of lido.chamadas) {
+      resultados.push({ type: "tool_result", tool_use_id: c.id, content: await ferramentas.executar(c.nome, c.entrada) });
     }
     mensagens.push({ role: "user", content: resultados });
   }
 
-  return { tipo: "transferir", motivo: `o robô não chegou a uma resposta em ${MAXIMO_DE_VOLTAS} voltas` };
+  return { tipo: "transferir", motivo: `o robô não chegou a uma resposta em ${MAXIMO_DE_VOLTAS} voltas`, mensagemAoCliente: "Vou chamar alguém da equipe para te responder isso." };
+}
+
+// UMA VOLTA SÓ, para o carteiro do Trilho.
+//
+// O Trilho manda o contexto na primeira chamada e, nas seguintes, devolve o
+// ESTADO que veio daqui mais os resultados das ferramentas que ele executou. O
+// estado é opaco do lado de lá: ele guarda e devolve, sem ler. É aqui que mora a
+// conversa montada do nosso jeito.
+//
+// ⚠️ O PROMPT NUNCA ENTRA NO ESTADO. Ele é remontado do disco a cada chamada e
+// vive só nesta máquina. O que viaja é a conversa e o que as ferramentas
+// responderam, que o Trilho já tem.
+export async function pensarUmPasso({ contexto, definicoes, estado, resultados }, sinal) {
+  const anterior = estado && typeof estado === "object" ? estado : null;
+  const voltas = (anterior?.voltas ?? 0) + 1;
+  if (voltas > MAXIMO_DE_VOLTAS) {
+    return { decisao: { tipo: "transferir", motivo: `o robô não chegou a uma resposta em ${MAXIMO_DE_VOLTAS} voltas`, mensagemAoCliente: "Vou chamar alguém da equipe para te responder isso." } };
+  }
+
+  const ctx = anterior?.contexto ?? contexto;
+  if (!ctx?.turnos) throw new Error("faltou o contexto na primeira chamada");
+
+  const mensagens = anterior ? [...anterior.mensagens] : [...ctx.turnos];
+  if (anterior && Array.isArray(resultados)) {
+    mensagens.push({
+      role: "user",
+      content: resultados.map((r) => ({ type: "tool_result", tool_use_id: r.id, content: String(r.texto ?? "") })),
+    });
+  }
+
+  const r = await cliente.messages.create(
+    {
+      model: MODELO,
+      max_tokens: MAXIMO_DE_TOKENS,
+      system: sistemaPara(ctx),
+      tools: [...(definicoes ?? anterior?.definicoes ?? []), ...DECIDIR],
+      messages: mensagens,
+    },
+    { signal: sinal },
+  );
+
+  const uso = usoDa(r);
+  const lido = interpretar(r);
+  if (lido.decisao) return { decisao: lido.decisao, uso };
+
+  return {
+    ferramentas: lido.chamadas,
+    // O contexto e as definições ficam guardados aqui para o Trilho não precisar
+    // repetir os dois a cada volta: ele devolve o estado e pronto.
+    estado: {
+      voltas,
+      contexto: ctx,
+      definicoes: definicoes ?? anterior?.definicoes ?? [],
+      mensagens: [...mensagens, { role: "assistant", content: lido.conteudo }],
+    },
+    uso,
+  };
 }
 
 export const CEREBRO_INSTALADO = true;

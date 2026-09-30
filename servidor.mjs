@@ -29,7 +29,7 @@ if (!process.env.ANTHROPIC_API_KEY) {
   process.exit(1);
 }
 
-const { pensar, MODELO, invalidarPrompt, PASTA_DA_BASE, ARQUIVO_DO_PROMPT, documentosDaBase } =
+const { pensar, pensarUmPasso, MODELO, invalidarPrompt, PASTA_DA_BASE, ARQUIVO_DO_PROMPT, documentosDaBase } =
   await import("./cerebro.mjs");
 
 const PORTA = Number(process.env.LUCAS_PORTA || 4310);
@@ -77,17 +77,17 @@ app.post("/api/pensar", async (req, res) => {
   if (!igual(veio, TOKEN)) return res.status(401).json({ erro: "token inválido" });
 
   const { contexto, definicoes, estado, resultados } = req.body ?? {};
-  if (!contexto?.turnos) return res.status(400).json({ erro: "faltou o contexto" });
+  if (!estado && !contexto?.turnos) return res.status(400).json({ erro: "faltou o contexto" });
 
   try {
-    const r = await pensar(
-      contexto,
-      { definicoes: definicoes ?? [], estado, resultados },
+    const r = await pensarUmPasso(
+      { contexto, definicoes, estado, resultados },
       AbortSignal.timeout(Number(process.env.LUCAS_PRAZO_MS || 22_000)),
     );
     return res.json(r);
   } catch (e) {
-    console.error(`[lucas] pensar falhou: ${e instanceof Error ? e.message : e}`);
+    const motivo = e instanceof Error ? e.message : String(e);
+    console.error(`[lucas] pensar falhou: ${motivo}`);
     return res.status(503).json({ erro: "o cérebro não respondeu" });
   }
 });
