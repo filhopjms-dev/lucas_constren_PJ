@@ -20,6 +20,16 @@ import dotenv from "dotenv";
 const AQUI = path.dirname(fileURLToPath(import.meta.url));
 const ENDERECO = process.env.LUCAS_URL || "http://127.0.0.1:4310/api/pensar";
 const MAXIMO_DE_VOLTAS = 6;
+const MAXIMO_DE_FERRAMENTAS_POR_VOLTA = 8;
+
+// O Trilho só liga o robô se o endereço for https. Em http, o corpo -- nome,
+// telefone e até trinta mensagens da conversa -- viaja em claro, e nada acusaria,
+// porque o robô responderia normalmente. Localhost é a exceção, porque ali não
+// existe rede no meio.
+if (!/^https:/.test(ENDERECO) && !/^http:\/\/(127\.0\.0\.1|localhost)[:/]/.test(ENDERECO)) {
+  console.error(`  ⚠️  ${ENDERECO} não é https. O Trilho recusaria este endereço.`);
+  process.exit(1);
+}
 
 // Lê pelo dotenv, e não com expressão regular: é assim que o servidor carrega, e
 // a regex discorda dele quando o valor está entre aspas. Foi por medir o arquivo
@@ -70,6 +80,12 @@ for (let volta = 0; volta < MAXIMO_DE_VOLTAS; volta++) {
     method: "POST",
     headers: { "Content-Type": "application/json", Authorization: `Bearer ${TOKEN}` },
     body: enviado,
+    // NÃO SEGUIR REDIRECIONAMENTO. O padrão do fetch é seguir, e num 307 ou 308 o
+    // CORPO é reenviado ao novo destino -- e o corpo leva nome, telefone e a
+    // conversa. O Authorization cai quando a origem muda, mas os dados já foram.
+    // Regra do Jânio, achada na revisão dele; está aqui porque este carteiro só
+    // vale enquanto for cópia fiel do de lá.
+    redirect: "error",
     signal: AbortSignal.timeout(30_000),
   });
 
@@ -86,6 +102,20 @@ for (let volta = 0; volta < MAXIMO_DE_VOLTAS; volta++) {
 
   if (!Array.isArray(j.ferramentas) || !j.ferramentas.length) {
     console.error("  ⚠️  respondeu sem decisão e sem ferramenta");
+    process.exit(1);
+  }
+
+  // As duas recusas que o carteiro do Trilho passou a fazer, repetidas aqui para
+  // este script continuar valendo como prova do protocolo.
+  if (j.ferramentas.length > MAXIMO_DE_FERRAMENTAS_POR_VOLTA) {
+    console.error(`  ⚠️  pediu ${j.ferramentas.length} ferramentas numa volta, e o Trilho recusa acima de ${MAXIMO_DE_FERRAMENTAS_POR_VOLTA}`);
+    process.exit(1);
+  }
+  if (!j.estado) {
+    // Sem estado o carteiro reenviaria o contexto inteiro e jogaria fora os
+    // resultados, repetindo as consultas ao banco a cada volta, sem uma linha de
+    // registro. Barrar aqui é mais barato que descobrir pela conta do banco.
+    console.error("  ⚠️  pediu ferramenta sem devolver o estado");
     process.exit(1);
   }
 

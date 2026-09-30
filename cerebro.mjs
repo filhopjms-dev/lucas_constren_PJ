@@ -54,6 +54,19 @@ const MAXIMO_DE_VOLTAS = 6;
 // barrada, então é melhor descobrir aqui.
 const MAXIMO_DE_CARACTERES = 1000;
 
+// QUANTAS FERRAMENTAS CABEM NUMA VOLTA, e por que o número é o dele.
+//
+// O carteiro do Trilho recusa mais de oito numa volta só. A regra é dele e é
+// certa: cada ferramenta é uma consulta ao banco de produção da Constren, e sem
+// teto quem decidia quantas consultas aquele banco leva por mensagem do cliente
+// era este serviço aqui, de fora.
+//
+// O teto está repetido deste lado para o robô não pedir o que vai ser recusado.
+// Se a recusa acontecer lá, o motivo chega ao carteiro e não a nós, e quem lê o
+// registro da rodada vê uma conversa transferida sem saber por quê. Batendo
+// aqui, a transferência sai com o motivo escrito por extenso.
+const MAXIMO_DE_FERRAMENTAS_POR_VOLTA = 8;
+
 // ---------------------------------------------------------------- o prompt
 
 // Lido do disco a cada partida do processo, não a cada conversa: são dezenas de
@@ -216,6 +229,15 @@ function interpretar(r) {
   // Parou por ferramenta e não pediu nenhuma que exista: não há o que executar,
   // e insistir seria laço.
   if (!chamadas.length) return { decisao: { tipo: "transferir", motivo: "o robô pediu uma ferramenta que não existe" , mensagemAoCliente: "Vou chamar alguém da equipe para te ajudar com isso." } };
+  if (chamadas.length > MAXIMO_DE_FERRAMENTAS_POR_VOLTA) {
+    return {
+      decisao: {
+        tipo: "transferir",
+        motivo: `o robô pediu ${chamadas.length} ferramentas numa volta só, e o limite é ${MAXIMO_DE_FERRAMENTAS_POR_VOLTA}`,
+        mensagemAoCliente: "Vou chamar alguém da equipe para te ajudar com isso.",
+      },
+    };
+  }
   return { chamadas, conteudo: r.content };
 }
 
