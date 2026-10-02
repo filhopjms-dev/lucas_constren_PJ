@@ -1,0 +1,11 @@
+{
+  "nome": "Visita JA agendada: ele nao pode transferir de novo",
+  "porque": "Aconteceu com o Paulo em 01/10/2026. O robo agendou a visita e transferiu (certo). O Paulo devolveu a conversa ao robo DUAS vezes, e nas duas ele transferiu de novo em segundos, porque o historico mostra visita combinada e isso esta na lista de motivos. Depois o cliente mandou 'Boa tarde' e ficou sem resposta. Aqui ele tem que CONTINUAR atendendo.",
+  "lead": { "etapa": "Visita", "empreendimento": "Riviera" },
+  "cliente": [
+    "Boa tarde",
+    "o 1103 ainda ta disponivel?",
+    "e esse audio que te mandei, voce ouviu?",
+    "a visita de amanha continua de pe?"
+  ]
+}
