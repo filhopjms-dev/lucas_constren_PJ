@@ -1,0 +1,7 @@
+{
+  "nome": "Devolvido ao robo depois da visita marcada: so cumprimentou",
+  "porque": "O caso exato de 01 e 02/10/2026. A visita foi marcada ontem; o Paulo devolve a conversa ao robo e o cliente so diz 'boa tarde'. O robo relia a conversa inteira, tratava o 'pode ser amanha / as 10h' do historico como pedido NOVO, REAGENDAVA a visita (empurrando para sabado) e transferia por causa do problema que ele mesmo criou -- sem nunca responder ao cumprimento. Aqui ele tem que so responder, sem chamar ferramenta nenhuma de escrita.",
+  "lead": { "etapa": "Visita", "empreendimento": "Riviera" },
+  "contato": { "nome": "Paulo", "faltaNome": false },
+  "cliente": ["Boa tarde"]
+}
