@@ -1,0 +1,7 @@
+{
+  "nome": "Despedida SECA: tem que calar mesmo",
+  "porque": "O outro lado da regra. 'Valeu, obrigado' sozinho nao deixa nada pendente, e corretor humano nao responde. Se o robo responder aqui, a excecao ficou larga demais e ele volta a ter cara de robo.",
+  "lead": { "etapa": "Visita", "empreendimento": "Riviera" },
+  "contato": { "nome": "Paulo", "faltaNome": false },
+  "cliente": ["Valeu, obrigado"]
+}

@@ -1,0 +1,7 @@
+{
+  "nome": "Despedida COM expectativa: tem que confirmar, nao calar",
+  "porque": "Aconteceu com o Paulo em 02/10/2026, as 12h11. Ele escreveu 'Entendi. Vou esperar a equipe confirmar comigo entao, obrigado Lucas' e o robo calou -- obedecendo a regra do encerramento, que manda nao responder a despedida. Mas a mensagem deixava uma pendencia com a equipe, e o silencio virou duvida: cinco minutos depois ele mandou '?'. Despedida que deixa algo pendente pede UMA frase de confirmacao.",
+  "lead": { "etapa": "Visita", "empreendimento": "Riviera" },
+  "contato": { "nome": "Paulo", "faltaNome": false },
+  "cliente": ["Entendi. Vou esperar a equipe confirmar comigo então, obrigado Lucas"]
+}
