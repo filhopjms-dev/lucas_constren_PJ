@@ -64,8 +64,43 @@ function valeAAssinatura(bruto) {
 
 const app = express();
 app.disable("x-powered-by");
-app.use(express.json({ limit: "2mb" }));
+app.use(express.json({ limit: "8mb" }));  // 8 MB para caber áudio em base64
 app.use(cookieParser());
+
+// O MESMO TOKEN DO CARTEIRO, numa função, para a rota de transcrição não repetir
+// a conferência. A do /api/pensar ficou inline de propósito: ela está em produção
+// e eu não mexo nela para arrumar duplicação de oito linhas.
+function tokenDoTrilhoConfere(req) {
+  const veio = String(req.get("authorization") ?? "").replace(/^Bearer\s+/i, "").trim();
+  if (igual(veio, TOKEN)) return true;
+  console.warn(`[lucas] recusei uma chamada: chegaram ${veio.length} caracteres, espero ${TOKEN.length}.`);
+  return false;
+}
+
+// ---------------------------------------------------------------- transcrição
+
+// O TRILHO MANDA O ÁUDIO E RECEBE O TEXTO, na ENTRADA da mensagem e não durante
+// a rodada: a rodada tem 25 segundos para pensar e não sobra para esperar a
+// OpenAI. O detalhe está em transcrever.mjs.
+//
+// Falhar aqui não quebra nada do lado de lá: devolve ok:false e o Trilho mantém
+// o "[O cliente mandou um áudio]" de sempre.
+app.post("/api/transcrever", async (req, res) => {
+  if (!tokenDoTrilhoConfere(req)) return res.status(401).json({ erro: "token inválido" });
+
+  const comeco = Date.now();
+  const { transcrever } = await import("./transcrever.mjs");
+  const r = await transcrever(req.body ?? {}, (process.env.OPENAI_API_KEY || "").trim());
+  const s = ((Date.now() - comeco) / 1000).toFixed(1);
+
+  // O LOG NUNCA TRAZ O QUE O CLIENTE DISSE. Só tamanho, tempo e desfecho: a
+  // conversa já está guardada no Trilho, e repetir aqui seria espalhar dado de
+  // cliente por mais um lugar sem precisar.
+  if (r.ok) console.log(`[lucas] transcrevi ${(r.bytes / 1024).toFixed(0)} KB em ${s}s, ${r.texto.length} caracteres`);
+  else console.warn(`[lucas] não transcrevi (${s}s): ${r.motivo}`);
+
+  res.json(r.ok ? { ok: true, texto: r.texto } : { ok: false, motivo: r.motivo });
+});
 
 // ---------------------------------------------------------------- o carteiro
 
