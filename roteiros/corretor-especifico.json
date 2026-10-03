@@ -1,0 +1,5 @@
+{
+  "nome": "Cliente quer falar com um corretor pelo nome",
+  "porque": "O prompt nao trata. O erro e o robo inventar que vai chamar a pessoa, ou dizer que ela nao existe. Nao ha ferramenta para saber quem e quem.",
+  "cliente": ["boa tarde, eu queria falar com a Alessandra, ela me atendeu semana passada"]
+}

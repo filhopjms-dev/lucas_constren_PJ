@@ -12,6 +12,7 @@
 
 import fs from "node:fs";
 import path from "node:path";
+import crypto from "node:crypto";
 import { fileURLToPath } from "node:url";
 import dotenv from "dotenv";
 
@@ -62,12 +63,27 @@ const { pensar, MODELO, ARQUIVO_DO_PROMPT } = await import("./cerebro.mjs");
 // Aqui o aviso é barulhento de propósito. Ele compara as datas, não o conteúdo:
 // arquivo guardado mais novo que o que está no ar quer dizer que alguém editou
 // um e esqueceu o outro.
+//
+// ⚠️ E ELE COMPARA O CONTEÚDO, NÃO SÓ A DATA.
+//
+// A primeira versão olhava só o mtime, e gritava toda vez que uma versão nova era
+// criada — porque criar a vN é copiar o dados/prompt.txt, e a cópia nasce com data
+// mais nova que o original. Mesmo conteúdo, alarme disparado. Em 02/10/2026 ele
+// gritou depois do v5, sem ter nada errado.
+//
+// Alarme que dispara à toa é alarme que se ignora quando importa. Agora, data mais
+// nova só vira aviso se o texto for MESMO diferente.
 {
+  const mesmaCoisa = (a, b) =>
+    crypto.createHash("sha256").update(fs.readFileSync(a)).digest("hex") ===
+    crypto.createHash("sha256").update(fs.readFileSync(b)).digest("hex");
   const guardados = fs.readdirSync(path.resolve(AQUI, ".."))
     .filter((f) => /^PROMPT_.*\.txt$/i.test(f))
     .map((f) => path.join(path.resolve(AQUI, ".."), f));
   const noAr = fs.statSync(ARQUIVO_DO_PROMPT).mtimeMs;
-  const maisNovo = guardados.filter((f) => fs.statSync(f).mtimeMs > noAr + 1000);
+  const maisNovo = guardados.filter(
+    (f) => fs.statSync(f).mtimeMs > noAr + 1000 && !mesmaCoisa(f, ARQUIVO_DO_PROMPT),
+  );
   if (maisNovo.length) {
     console.log(`\n  ⚠️  ATENÇÃO: ${maisNovo.map((f) => path.basename(f)).join(", ")} está mais novo que dados/prompt.txt.`);
     console.log("      O ensaio vai medir o prompt QUE ESTÁ NO AR, não o que você acabou de editar.");
