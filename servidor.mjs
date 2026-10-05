@@ -122,7 +122,21 @@ app.post("/api/pensar", async (req, res) => {
   }
 
   const { contexto, definicoes, estado, resultados } = req.body ?? {};
-  if (!estado && !contexto?.turnos) return res.status(400).json({ erro: "faltou o contexto" });
+  // ⚠️ A RECUSA DEIXA RASTRO, e a linha abaixo nasceu de três dias perdidos.
+  //
+  // Em 02/10/2026 o Trilho mandou a transcrição para ESTA rota, porque a
+  // derivação do endereço do outro lado caiu no endereço do cérebro. O corpo
+  // chegava com {url, mime, nome}, sem contexto, e esta linha devolvia 400 e
+  // seguia calada. Do lado de cá parecia que ninguém tinha chamado, e eu procurei
+  // o defeito em empacotamento, em prazo de publicação e em condição de código,
+  // enquanto a chamada chegava e era recusada em silêncio.
+  //
+  // Recusa que não se vê é indistinguível de chamada que não aconteceu, e as duas
+  // têm consertos opostos.
+  if (!estado && !contexto?.turnos) {
+    console.warn(`[lucas] recusei um pedido sem contexto. Campos que vieram: ${Object.keys(req.body ?? {}).join(", ") || "nenhum"}`);
+    return res.status(400).json({ erro: "faltou o contexto" });
+  }
 
   // O RELÓGIO, MEDIDO DE DENTRO.
   //
