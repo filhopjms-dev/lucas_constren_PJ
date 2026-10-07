@@ -66,13 +66,18 @@ async function rodar(dados, entrada) {
   return { resposta, conhecidos: f.conhecidos };
 }
 
+// O resumo tem DOIS títulos, e qual deles sai é o assunto do caso do teto de preço.
+const resumoDe = (resposta) => resposta.split("\n").find((l) => l.startsWith("Metragens "));
+
 const casos = [];
 const caso = (nome, fn) => casos.push({ nome, fn });
 
 caso("um empreendimento, lista cortada: o resumo sai com as quatro metragens", async () => {
   const { resposta, conhecidos } = await rodar({ empreendimentos: [emp("p1", "Portillo Residence")], unidades: PORTILLO }, { empreendimento: "Portillo" });
-  const linha = resposta.split("\n").find((l) => l.startsWith("Metragens disponíveis"));
+  const linha = resumoDe(resposta);
   if (!linha) return { ok: false, porque: "não saiu resumo nenhum", resposta };
+  // Sem filtro a palavra certa é "disponíveis", porque aí a lista é mesmo o prédio inteiro
+  if (!linha.startsWith("Metragens disponíveis")) return { ok: false, porque: "sem filtro, o título devia ser o de sempre", resposta: linha };
   const faltam = ["620.039", "785.679", "969.499", "895.769"].filter((v) => !linha.includes(v));
   if (faltam.length) return { ok: false, porque: `faltou no resumo: ${faltam.join(", ")}`, resposta: linha };
   // A metade que, esquecida, faria o conserto PIORAR o problema: ele saberia a resposta e
@@ -82,6 +87,27 @@ caso("um empreendimento, lista cortada: o resumo sai com as quatro metragens", a
   if (!valores.includes(785679) || !valores.includes(969499)) return { ok: false, porque: `conhecidos.valores sem os novos: ${valores}`, resposta: linha };
   // Quantas restam é dado para ESCOLHER, nunca para informar: nada de quantidades.
   if ([...conhecidos.quantidades].length) return { ok: false, porque: `quantidades anotadas (não devia): ${[...conhecidos.quantidades]}`, resposta: linha };
+  return { ok: true, resposta: linha };
+});
+
+// ⚠️ O CASO QUE EU TINHA DEIXADO PASSAR, e que o Jânio pegou na revisão (e894c46).
+//
+// O resumo é montado a partir do `servem`, que já passou pelos cinco filtros da pergunta.
+// Com teto de preço, anunciar "Metragens disponíveis no Portillo" é afirmar um fato falso
+// sobre o estoque: quem pede até 700 mil ouviria que o prédio só tem 68,35 m², quando
+// existem 83, 96 e 99 disponíveis, só acima do orçamento dele.
+//
+// O meu caso de filtro não pegava isso porque filtrava até sobrar UMA metragem, e aí o
+// resumo nem sai. Passava por sorte, não por cobertura: é preciso um filtro que deixe
+// DUAS, que é quando o resumo aparece e o título importa.
+caso("teto de preço: o título diz que a lista veio filtrada", async () => {
+  const { resposta } = await rodar({ empreendimentos: [emp("p1", "Portillo Residence")], unidades: PORTILLO },
+    { empreendimento: "Portillo", preco_maximo: 800000 });
+  const linha = resumoDe(resposta);
+  if (!linha) return { ok: false, porque: "não saiu resumo (deviam sobrar 68,35 e 83)", resposta };
+  if (linha.includes("disponíveis")) return { ok: false, porque: "disse 'disponíveis' sobre uma lista filtrada por preço", resposta: linha };
+  if (!linha.includes("620.039") || !linha.includes("785.679")) return { ok: false, porque: "faltou uma das duas que cabem no teto", resposta: linha };
+  if (linha.includes("969.499") || linha.includes("895.769")) return { ok: false, porque: "vazou metragem acima do teto", resposta: linha };
   return { ok: true, resposta: linha };
 });
 
