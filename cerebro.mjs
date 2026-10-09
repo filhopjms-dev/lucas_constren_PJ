@@ -107,6 +107,52 @@ function sistemaDaVez(contexto) {
     if (l.etapa) d.push(`a etapa dele no funil é "${l.etapa}"`);
     if (l.corretor) d.push(`o corretor responsável é ${l.corretor}`);
     if (d.length) linhas.push(`Sobre este cliente: ${d.join(", ")}. Isso é informação interna: não recite nada disso para ele.`);
+
+    // AS VISITAS QUE ELE JÁ TEM MARCADAS.
+    //
+    // O Trilho passou a mandar esta lista em 09/10/2026, quando a agenda deixou de aceitar
+    // um compromisso só por cliente. Sem imprimir aqui, ela chega e morre: o cérebro é quem
+    // vira contexto em texto, e o que não passa por esta função o modelo não lê.
+    //
+    // Ela existe para UMA decisão: quando o cliente combina um novo dia e hora, isso é
+    // remarcar a visita que já está marcada ou marcar outra? Pelos dados não dá para saber —
+    // "a mesma visita noutro dia" e "uma segunda visita" chegam idênticas na ferramenta. Sem
+    // ver o que já está marcado, a escolha vira chute, e o chute errado manda alguém da
+    // Constren ao lugar errado na hora errada.
+    //
+    // O ISO vai junto porque é o formato que a ferramenta pede no `quando_atual`, e pedir que
+    // o modelo converta "sábado às 9h" de cabeça é pedir para ele errar.
+    //
+    // Aqui só o FATO de quem marcou. O que fazer com visita marcada por pessoa é regra de
+    // atendimento, e regra de atendimento mora no prompt.
+    const visitas = Array.isArray(l.visitas) ? l.visitas : [];
+    if (visitas.length) {
+      const emAracaju = (iso) => {
+        const d = new Date(iso);
+        if (Number.isNaN(d.getTime())) return null;
+        const p = new Intl.DateTimeFormat("pt-BR", {
+          timeZone: "America/Maceio", weekday: "long", day: "2-digit", month: "2-digit",
+          year: "numeric", hour: "2-digit", minute: "2-digit", hour12: false,
+        }).formatToParts(d);
+        const v = (t) => p.find((x) => x.type === t)?.value ?? "";
+        return {
+          texto: `${v("weekday")}, ${v("day")}/${v("month")}/${v("year")} às ${v("hour")}:${v("minute")}`,
+          iso: `${v("year")}-${v("month")}-${v("day")}T${v("hour")}:${v("minute")}`,
+        };
+      };
+      const itens = visitas.map((v) => {
+        const q = emAracaju(v.quando);
+        const quem = v.porRobo ? "marcada por você" : "marcada por uma pessoa da equipe";
+        return q
+          ? `- ${q.texto} — ${v.titulo} — ${quem} — quando_atual: ${q.iso}`
+          : `- ${v.titulo} — ${quem} — sem data legível`;
+      });
+      linhas.push(
+        visitas.length === 1
+          ? `Este cliente JÁ TEM uma visita marcada:\n${itens[0]}`
+          : `Este cliente JÁ TEM ${visitas.length} visitas marcadas:\n${itens.join("\n")}`,
+      );
+    }
   } else {
     linhas.push("Esta conversa ainda não tem cadastro no funil, então as ferramentas que gravam não têm onde registrar.");
   }
