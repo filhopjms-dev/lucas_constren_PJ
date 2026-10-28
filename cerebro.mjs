@@ -15,6 +15,7 @@ import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import Anthropic from "@anthropic-ai/sdk";
+import { anotar } from "./livro-de-consumo.mjs";
 
 const AQUI = path.dirname(fileURLToPath(import.meta.url));
 
@@ -296,6 +297,7 @@ export async function pensar(contexto, ferramentas, sinal) {
   const mensagens = [...contexto.turnos];
 
   for (let volta = 0; volta < MAXIMO_DE_VOLTAS; volta++) {
+    const comecouEm = Date.now();
     const r = await cliente.messages.create(
       { model: MODELO, max_tokens: MAXIMO_DE_TOKENS, system: sistema, tools: ferramentasDaApi, messages: mensagens },
       { signal: sinal },
@@ -303,6 +305,7 @@ export async function pensar(contexto, ferramentas, sinal) {
     // O gasto entra no teto do mês a CADA chamada, e não só no fim: se a volta
     // seguinte estourar o prazo ou a API cair, o que já foi gasto continua gasto.
     ferramentas.anotarUso(usoDa(r));
+    anotar({ resposta: r, origem: "ensaio", volta: volta + 1, contexto, comecouEm });
 
     const lido = interpretar(r);
     if (lido.decisao) return lido.decisao;
@@ -346,6 +349,7 @@ export async function pensarUmPasso({ contexto, definicoes, estado, resultados }
     });
   }
 
+  const comecouEm = Date.now();
   const r = await cliente.messages.create(
     {
       model: MODELO,
@@ -356,6 +360,13 @@ export async function pensarUmPasso({ contexto, definicoes, estado, resultados }
     },
     { signal: sinal },
   );
+
+  // ⚠️ ANOTA ANTES DE QUALQUER DESVIO. O que vem depois pode sair por mais de
+  // um caminho (decisão pronta ou pedido de ferramenta), e a chamada já foi
+  // cobrada nos dois. Gravar aqui em cima é o que garante que não existe saída
+  // que gaste sem deixar linha -- que é exatamente o defeito que este livro
+  // nasceu para não repetir.
+  anotar({ resposta: r, origem: "carteiro", volta: voltas, contexto: ctx, comecouEm });
 
   const uso = usoDa(r);
   const lido = interpretar(r);
