@@ -26,7 +26,24 @@ import { fileURLToPath } from "node:url";
 const AQUI = path.dirname(fileURLToPath(import.meta.url));
 const PASTA_DE_CIMA = path.resolve(AQUI, "..");
 
-const resumo = (s) => crypto.createHash("sha256").update(s).digest("hex").slice(0, 12);
+// ⚠️ O FIM DE LINHA É NORMALIZADO ANTES DE RESUMIR (03/11/2026).
+//
+// Sem isto, este script MENTE em toda máquina Windows. O arquivo guardado na
+// pasta de cima tem CRLF; o que está no servidor tem LF, porque o navegador
+// normaliza ao enviar o formulário. Mesmo texto, impressões diferentes, e o
+// aviso "o servidor está com uma versão antiga" aparece sem nenhum servidor
+// estar desatualizado.
+//
+// Aconteceu em 03/11/2026: o Paulo colou o v14, a tela mostrou 814fd17de6e0 e
+// eu tinha passado 24ba48339a77 -- 540 caracteres de diferença, um por quebra
+// de linha, e nenhuma diferença de conteúdo. Ele parou o deploy para perguntar,
+// e fez certo em parar.
+//
+// É o mesmo tropeço do commit 836a21b do Trilho, onde o conferidor novo lia
+// CRLF e acusava divergência em toda máquina Windows. Duas vezes a mesma
+// pedra: conferência que compara BYTES tem de normalizar o que não é conteúdo.
+const semCR = (s) => s.split("\r\n").join("\n");
+const resumo = (s) => crypto.createHash("sha256").update(semCR(s)).digest("hex").slice(0, 12);
 
 const noAr = path.join(AQUI, "dados", "prompt.txt");
 if (!fs.existsSync(noAr)) { console.error(`\n  Não achei ${noAr}.\n`); process.exit(1); }
