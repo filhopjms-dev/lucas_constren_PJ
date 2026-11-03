@@ -118,8 +118,14 @@ function contextoDe(turnos, lead = null, contato = {}) {
 const cinza = (s) => `\x1b[90m${s}\x1b[0m`;
 const negrito = (s) => `\x1b[1m${s}\x1b[0m`;
 
+// O que o espelho ja mostrou nas voltas anteriores DESTE ensaio, igual ao que o
+// Trilho semeia em producao. A `agenda` NAO entra, pelo mesmo motivo de la:
+// preco e metragem nao mudam no meio da conversa, hora marcada muda.
+let conhecidosDaConversa = null;
+
 async function umaRodada(turnos, lead, contato) {
-  const ferramentas = criarFerramentasDeTeste();
+  const ferramentas = criarFerramentasDeTeste(conhecidosDaConversa ?? undefined);
+  conhecidosDaConversa = ferramentas.conhecidos;
   const contexto = contextoDe(turnos, lead, contato);
   const comeco = Date.now();
   let decisao, erro = null;

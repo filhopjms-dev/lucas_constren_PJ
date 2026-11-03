@@ -69,8 +69,18 @@ const eEntao = (oQueHouve) =>
 
 const listar = (nomes) => nomes.map((n) => `"${n}"`).join(", ");
 
-export function criarFerramentasDeTeste() {
-  const conhecidos = { valores: new Set(), areas: new Set(), quantidades: new Set(), entregas: new Set(), anos: new Set() };
+// ⚠️ `jaConhecidos` existe para o ensaio NAO MENTIR (03/11/2026).
+//
+// Em producao os `conhecidos` acumulam pela CONVERSA desde 03/11: o Trilho le
+// as voltas anteriores de `ia_rodadas.decisao` e semeia a rodada nova (ver
+// `conhecidosDaConversa`, em rodada.ts). O ensaio criava ferramentas zeradas a
+// cada turno, entao mostrava barrada uma resposta que em producao passa --
+// numero que o agente consultou no turno 1 e retoma no turno 3.
+//
+// Ensaio que acusa defeito inexistente custa caro: manda a gente consertar o
+// que nao esta quebrado, e ensina a desconfiar do proprio ensaio.
+export function criarFerramentasDeTeste(jaConhecidos) {
+  const conhecidos = jaConhecidos ?? { valores: new Set(), areas: new Set(), quantidades: new Set(), entregas: new Set(), anos: new Set() };
   const chamadas = [];
   let uso = null;
   // UM ARQUIVO POR RODADA, igual ao Trilho: o segundo pedido é recusado sem

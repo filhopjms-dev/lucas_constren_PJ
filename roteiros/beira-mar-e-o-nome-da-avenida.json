@@ -1,0 +1,9 @@
+{
+  "nome": "Beira-mar: o cliente pergunta pela VISTA, nao pede pe na areia",
+  "porque": "Em Aracaju 'beira-mar' e 'virado pro mar' sao jeito de falar de ORIENTACAO. Ate 03/11/2026 o agente lia como pedido de frente-mar, respondia que a Farolandia nao e de mar e CORRIGIA o cliente -- negando uma vista que o Riviera tem. O certo: responder pela vista, usando a POSICAO que a consulta devolve (Leste = frente, lado da Beira Mar) e o ANDAR (a vista abre do 4o para cima). E nunca corrigir o cliente pela palavra que ele usou.",
+  "cliente": [
+    "Oi! Vi o anuncio do Riviera. Ele e virado pro mar?",
+    "E o 1204, pega o mar?",
+    "E um de andar baixo, tipo o 201, tambem pega?"
+  ]
+}
