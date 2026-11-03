@@ -104,10 +104,32 @@ function sistemaDaVez(contexto) {
   const l = contexto.lead;
   if (l) {
     const d = [];
-    if (l.empreendimento) d.push(`o cadastro dele aponta interesse no ${l.empreendimento}`);
     if (l.etapa) d.push(`a etapa dele no funil é "${l.etapa}"`);
     if (l.corretor) d.push(`o corretor responsável é ${l.corretor}`);
     if (d.length) linhas.push(`Sobre este cliente: ${d.join(", ")}. Isso é informação interna: não recite nada disso para ele.`);
+
+    // 🔑 O EMPREENDIMENTO SAIU DE "INFORMAÇÃO INTERNA" E VIROU O EIXO DA CONVERSA
+    // (03/11/2026).
+    //
+    // Ele já chegava aqui, mas junto da etapa e do corretor, numa frase que
+    // terminava em "não recite nada disso para ele" — ou seja, o único dado que
+    // devia GUIAR o atendimento vinha rotulado como coisa a não usar. O agente
+    // então abria no genérico e deixava o cliente escolher o assunto.
+    //
+    // 📌 De onde ele vem: o nome da campanha. `empreendimentoPelaCampanha`
+    // (leadEntrando.ts) lê "[RIVIERA 2]" do nome da campanha e grava o
+    // empreendimento no pré-cadastro. Quem responde a um anúncio do Riviera
+    // está perguntando do Riviera, e começar por outro produto é desperdiçar o
+    // que a campanha já disse.
+    if (l.empreendimento) {
+      linhas.push(
+        `ESTE CLIENTE VEIO PELO ${String(l.empreendimento).toUpperCase()}: é esse o empreendimento da campanha que ele respondeu, ` +
+        `e é por ele que a conversa se conduz. Fale dele com conteúdo, consulte as unidades DELE, ` +
+        `e ofereça outro produto da Constren só se fizer sentido de verdade — quando o que ele procura ` +
+        `(valor, bairro, tamanho, prazo de entrega) não couber neste. Nunca recite que "o cadastro aponta interesse": ` +
+        `isso é bastidor, e o cliente já sabe por que escreveu.`,
+      );
+    }
 
     // AS VISITAS QUE ELE JÁ TEM MARCADAS.
     //
