@@ -50,7 +50,7 @@ if (!process.env.ANTHROPIC_API_KEY) {
   console.log(`\n  chave ${imp} · ${deOndeVeioAChave}`);
 }
 
-const { criarFerramentasDeTeste, conferirSaida } = await import("./ferramentas-de-teste.mjs");
+const { criarFerramentasDeTeste, conferirSaida, numerosQueOClienteEscreveu } = await import("./ferramentas-de-teste.mjs");
 const { pensar, MODELO, ARQUIVO_DO_PROMPT } = await import("./cerebro.mjs");
 
 // ⚠️ O ENSAIO LÊ dados/prompt.txt, E NÃO A VERSÃO GUARDADA NA PASTA DE CIMA.
@@ -126,6 +126,29 @@ let conhecidosDaConversa = null;
 async function umaRodada(turnos, lead, contato) {
   const ferramentas = criarFerramentasDeTeste(conhecidosDaConversa ?? undefined);
   conhecidosDaConversa = ferramentas.conhecidos;
+
+  // 🚨 E O QUE O CLIENTE ESCREVEU TAMBÉM, igual à produção (06/11/2026).
+  //
+  // Desde a mescla do Jânio, `conhecidosDaConversa` em rodada.ts semeia os
+  // `conhecidos` com os números das mensagens de ENTRADA da conversa: o cliente
+  // dizer "faixa de 400 mil" torna 400.000 citável. Sem isto aqui, o ensaio
+  // mostrava BARRADA a resposta da cliente Sue, que em produção passa.
+  //
+  // 🔑 Ensaio que acusa defeito inexistente custa caro — está escrito no
+  // cabeçalho de `criarFerramentasDeTeste`, pela mesma razão e em 03/11. É a
+  // segunda vez que a fonte dos `conhecidos` cresce em produção e o ensaio fica
+  // para trás. Quando a trava ganhar outra fonte, este trecho tem de crescer
+  // junto.
+  //
+  // Usa a MESMA função que a rodada usa, importada de saida.ts: reimplementar
+  // aqui faria o ensaio medir a própria cópia.
+  for (const t of turnos) {
+    if (t.role !== "user") continue;
+    const n = numerosQueOClienteEscreveu([t.content]);
+    for (const v of n.valores) conhecidosDaConversa.valores.add(v);
+    for (const a of n.areas) conhecidosDaConversa.areas.add(a);
+    for (const q of n.quantidades ?? []) conhecidosDaConversa.quantidades.add(q);
+  }
   const contexto = contextoDe(turnos, lead, contato);
   const comeco = Date.now();
   let decisao, erro = null;

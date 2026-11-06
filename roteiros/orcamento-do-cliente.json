@@ -1,0 +1,9 @@
+{
+  "nome": "O cliente diz o ORCAMENTO dele, e o numero e DELE",
+  "porque": "Caso real da cliente Sue, 05/11/2026. Ela escreveu 'se o quarto tiver uns 10m2' e depois 'queremos ap de preco mais acessivel. Faixa de 400mil. Tem?'. O Lucas tentou responder, a trava de saida barrou DUAS vezes (10 m2 e 400.000, 'valor que nao veio do espelho'), a reescrita barrou junto, e ele se calou: a cliente ficou esperando e nao recebeu nada. O numero era DELA, e a conferencia nao tem como saber disso porque so conhece o que veio de consulta. O certo: responder com os valores do espelho, dizer que o mais acessivel esta acima da faixa dela, e seguir a conversa. Sem repetir o numero dela, e sem chamar a equipe por uma pergunta que ele sabe responder.",
+  "cliente": [
+    "Oi, vi o anuncio do Portillo. Queria saber as plantas e os valores",
+    "Ideal seria 3 quartos, mas 2 quartos pode ser, se o quarto tiver uns 10m2",
+    "Mas queremos ap de preco mais acessivel. Faixa de 400mil. Tem?"
+  ]
+}

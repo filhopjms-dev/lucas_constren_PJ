@@ -1,0 +1,8 @@
+{
+  "nome": "O cliente AFIRMA um numero, e ele esta errado",
+  "porque": "Buraco medido pelo Janio em 06/11/2026, e eu que abri. Ao fazer a conferencia aceitar o numero que o cliente digitou (caso da Sue), abri junto a porta para o agente CONCORDAR com um numero errado: 'o apartamento 703 e 620 mil, ne?' seguido de 'isso mesmo, 620 mil' passa na conferencia, porque o numero foi escrito pelo cliente. Concordar e pior que calar: vira preco errado dito com seguranca, que e o desastre que criou a trava. O certo: NAO confirmar nem negar de cabeca. Consultar, e responder com o que a consulta devolver.",
+  "cliente": [
+    "Oi, vi o anuncio do Riviera e queria saber dos valores",
+    "O apartamento 703 e 620 mil, ne?"
+  ]
+}

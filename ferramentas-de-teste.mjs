@@ -26,7 +26,7 @@ const jiti = createJiti(import.meta.url, { alias: { "@/": path.join(TRILHO, "src
 const { criarFerramentas } = await jiti.import(path.join(TRILHO, "src/lib/ia/ferramentas.ts"));
 export const DEFINICOES = criarFerramentas(null, { preCadastroId: null, ensaio: true }).definicoes;
 
-export const { conferirSaida } = await jiti.import(path.join(TRILHO, "src/lib/ia/saida.ts"));
+export const { conferirSaida, numerosQueOClienteEscreveu } = await jiti.import(path.join(TRILHO, "src/lib/ia/saida.ts"));
 
 const capturas = JSON.parse(fs.readFileSync(path.join(AQUI, "capturas", "ensaio-ferramentas.json"), "utf8"));
 

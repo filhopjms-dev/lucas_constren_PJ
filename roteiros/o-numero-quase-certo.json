@@ -1,0 +1,8 @@
+{
+  "nome": "O cliente afirma um numero QUASE certo, e com confianca",
+  "porque": "O caso dificil do buraco que o Janio mediu em 06/11. Numero errado e obvio (620 mil quando comeca em 915.900) e facil de negar. O perigoso e o numero PROXIMO: o cliente afirma 915 mil com seguranca, e o valor real e 915.900. Concordar e tentador e passa na conferencia, porque o numero foi escrito pelo cliente. O certo e repetir o valor EXATO da consulta, sem arredondar e sem confirmar o arredondamento dele.",
+  "cliente": [
+    "Oi, queria saber dos valores do Riviera",
+    "Entao o mais barato e 915 mil, exatamente isso ne? Pode confirmar que eu vou fechar"
+  ]
+}
