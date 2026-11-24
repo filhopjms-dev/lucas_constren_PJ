@@ -232,8 +232,31 @@ const cliente = new Anthropic();
 
 const textoDe = (r) => r.content.filter((b) => b.type === "text").map((b) => b.text).join("\n").trim();
 
+// O CACHE É DE UMA HORA, E NÃO DOS CINCO MINUTOS PADRÃO.
+//
+// Em 24/11/2026 o Lucas calou: o Trilho bateu no teto de uso do mês (20 milhões
+// de tokens ponderados, `TETO_DE_TOKENS_NO_MES`) e passou toda conversa para a
+// equipe. A conta de novembro mostrou de onde vinha o peso: das 24 milhões de
+// unidades ponderadas, 16,4 eram GRAVAÇÃO de cache — 68%. As leituras, 56
+// milhões de tokens de verdade, pesavam só 5,6, porque entram a um décimo.
+//
+// 🔑 A causa era o prazo. Sem `ttl`, `ephemeral` dura CINCO MINUTOS, e o prompt
+// fixo tem ~48,8 mil tokens. Cliente que responde depois de cinco minutos — que
+// é o normal de quem está escolhendo apartamento — faz o prompt inteiro ser
+// reescrito. A amortização medida era de 2,78 leituras por gravação: cada
+// reescrita servia menos de três mensagens antes de expirar.
+//
+// Uma hora cobre a conversa de WhatsApp real, que anda em minutos e não em
+// segundos. A gravação de 1h custa 2x a entrada em vez de 1,25x, então a troca
+// só compensa porque evita VÁRIAS reescritas — e para o teto do Trilho ela
+// compensa ainda mais, porque lá toda gravação conta 1,25 sem olhar o prazo.
+//
+// ⚠️ Onde isso PIORA: conversa de uma mensagem só, que nunca volta. Ali a
+// gravação mais cara não é amortizada por ninguém. É minoria, e o ganho das
+// outras paga com folga — mas se um dia o tráfego virar enxurrada de contato
+// único, esta linha é a primeira a revisar.
 const sistemaPara = (contexto) => [
-  { type: "text", text: obterSistemaFixo(), cache_control: { type: "ephemeral" } },
+  { type: "text", text: obterSistemaFixo(), cache_control: { type: "ephemeral", ttl: "1h" } },
   { type: "text", text: sistemaDaVez(contexto) },
 ];
 
