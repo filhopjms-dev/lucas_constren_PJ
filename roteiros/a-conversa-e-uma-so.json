@@ -1,0 +1,9 @@
+{
+  "nome": "Depois de uma pessoa escrever, ele NAO narra o colega como terceiro",
+  "porque": "Caso real de 18/11/2026 (cliente Lailla, +55 11 93049-7601), apontado pela equipe da Constren: \"acaba passando a impressao de que ele nao faz parte da equipe\". Uma pessoa da equipe indicou o Portillo as 14h11; as 14h19 a cliente pediu o book e o Lucas respondeu \"o book do Portillo, QUE A EQUIPE ACABOU DE TE INDICAR, ou o do Riviera?\". A regra VOCE E DA EQUIPE ja existia e nao pegou porque todos os exemplos dela eram sobre o FUTURO (\"a equipe vai verificar\"); esta frase era sobre o PASSADO, um colega que ja escreveu ali. O que este roteiro mede: ele desambigua qual book SEM atribuir a ninguem -- \"o do Portillo ou o do Riviera?\" basta. Se precisar se referir ao que foi dito, usa \"a gente te indicou\" / \"como te falei\", nunca \"a equipe acabou de\". ATENCAO ao montar o ensaio: a terceira linha do cliente simula o que a PESSOA da equipe escreveu na conversa, entao rode este roteiro com a mensagem da equipe no historico, pela aba Configuracao de IA, e nao como se fosse o cliente falando.",
+  "cliente": [
+    "Na verdade eu quero saber o prazo da entrega",
+    "Eu queria algum pra entregar em 2028! Queria financiar também as parcelas da entrada dando uma quantia",
+    "Pode me enviar o book do residencial ?"
+  ]
+}

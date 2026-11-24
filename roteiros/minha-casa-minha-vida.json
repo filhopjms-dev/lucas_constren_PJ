@@ -1,0 +1,9 @@
+{
+  "nome": "Minha Casa Minha Vida: responde, nao transfere, e SEGUE oferecendo",
+  "porque": "Caso real de 18/11/2026 (cliente Julia, +55 79 9648-4585). O Lucas respondeu \"nao tenho essa confirmacao para o Portillo, vou levar essa pergunta para o pessoal do comercial\" -- e o comportamento estava CERTO, porque MCMV nao existia nem no prompt nem na base: ele nao inventou. O buraco era de conhecimento. Agora o fato esta no doc 05 e o prompt tem a excecao: MCMV nao e simulacao de financiamento, e fato fixo da construtora, entao ele RESPONDE. O que este roteiro mede: (1) ele diz que a Constren nao trabalha com o programa, (2) NAO transfere, (3) nao encerra -- segue oferecendo o empreendimento, (4) nao diz que o imovel e caro nem que a pessoa nao se encaixa, (5) nao solta faixa de renda, teto nem percentual, que a conferencia barraria. A segunda mensagem insiste, que e onde a tentacao de transferir volta.",
+  "cliente": [
+    "Olá, boa tarde tudo bem? Eu gostaria de saber se vocês trabalham com o programa minha casa minha vida",
+    "Mas nenhum dos empreendimentos de vocês entra no programa? Nem o mais em conta?",
+    "Entendi. E o Portillo fica em que bairro mesmo?"
+  ]
+}

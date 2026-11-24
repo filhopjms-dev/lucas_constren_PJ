@@ -1,0 +1,9 @@
+{
+  "nome": "Abertura OFERECE o book numa frase, e so manda se ele aceitar",
+  "porque": "Pedido da equipe da Constren (Lanna, 18/11/2026): muitos leads chegam pelo anuncio sem conhecer o empreendimento e nao sabem que existe um book com as plantas. O Paulo autorizou OFERECER, nao mandar. A distincao e o trabalho todo: em 28/10 foi MEDIDO que, com o arquivo saindo sozinho, QUATRO EM CADA CINCO conversas de campanha comecavam com um anexo em vez de uma conversa (8 de 10 em 28/10, 13 de 17 em 27/10) -- e o ramo material-so-quando-pedir-o-arquivo foi criado justamente para parar isso. O que este roteiro mede: (1) a abertura traz o oferecimento em frase AFIRMATIVA, (2) continua com UMA pergunta so, a que qualifica -- o oferecimento nao pode virar a segunda pergunta, (3) enviar_material NAO e chamada na abertura, (4) quando ele aceita na segunda mensagem, AI SIM a ferramenta e chamada e o Lucas avisa que esta mandando. A terceira mensagem mede o caminho oposto: cliente que ignora o oferecimento e responde a pergunta -- ali ele NAO pode insistir no book.",
+  "cliente": [
+    "Olá, gostaria de mais informações",
+    "Pode mandar sim",
+    "É pra morar, estou saindo de aluguel"
+  ]
+}
